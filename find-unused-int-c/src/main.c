@@ -9,14 +9,15 @@
 #include <stdio.h>
 
 int main(int argc, const char * argv[]) {
-    int count = 0;
+    long count = 0;
+
     int n;
 
     while (scanf("%d", &n) == 1) {
         count++;
     }
 
-    printf("Read %d integer(s).\n", count);
+    printf("Read %ld integer(s).\n", count);
 
     return 0;
 }

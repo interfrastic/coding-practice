@@ -11,19 +11,19 @@
 #include <time.h>
 
 int main(int argc, const char * argv[]) {
-    int n = 0;
+    long count = 0;
 
-    int arg;
+    long arg;
 
-    if (argc >= 2 && sscanf(argv[1], "%d", &arg) == 1) {
-        n = arg;
+    if (argc >= 2 && sscanf(argv[1], "%ld", &arg) == 1) {
+        count = arg;
     }
 
     srand(time(NULL));
 
-    int i;
+    long i;
 
-    for (i = 0; i < n; i++) {
+    for (i = 0; i < count; i++) {
         printf("%d\n", rand());
     }
 
