@@ -9,7 +9,11 @@
 #include <stdio.h>
 
 int main(int argc, const char * argv[]) {
-    // insert code here...
-    printf("Hello, World!\n");
+    int i;
+
+    for (i = 0; i < 1000000000; i++) {
+        printf("%d\n", i);
+    }
+
     return 0;
 }
