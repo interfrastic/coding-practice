@@ -7,12 +7,24 @@
 //
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 int main(int argc, const char * argv[]) {
+    int n = 0;
+
+    int arg;
+
+    if (argc >= 2 && sscanf(argv[1], "%d", &arg) == 1) {
+        n = arg;
+    }
+
+    srand(time(NULL));
+
     int i;
 
-    for (i = 0; i < 1000000000; i++) {
-        printf("%d\n", i);
+    for (i = 0; i < n; i++) {
+        printf("%d\n", rand());
     }
 
     return 0;
