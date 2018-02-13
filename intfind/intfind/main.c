@@ -16,47 +16,45 @@ typedef unsigned short bin_t;
 #define BITS_PER_BIN    (sizeof (bin_t) * CHAR_BIT)
 #define BINS_SIZE       ((INT_MAX / BITS_PER_BIN) + 1)
 
-int main(int argc, const char * argv[]) {
-    int n = 0;
-    bin_t * bins = calloc(BINS_SIZE, sizeof (bin_t));
-    long count = 0;
+static void record_used_int(bin_t *bins, int n) {
+    int bin_index = n / BITS_PER_BIN;
+    bin_t bin_mask = 1ul << (n % BITS_PER_BIN);
 
-//    while (scanf("%d", &n) == 1) {
-    for (n = 0; n >= 0 && n < INT_MAX; n++) {
-        int bin_index = n / BITS_PER_BIN;
-        bin_t bin_mask = 1ul << (n % BITS_PER_BIN);
+    bins[bin_index] |= bin_mask;
+}
 
-        bins[bin_index] |= bin_mask;
-        count++;
-    }
-
-    printf("Read %ld integer(s).\n", count);
-
-    bool found = false;
-    int bin_index = 0;
-    n = 0;
-
-    while (!found && bin_index < BINS_SIZE) {
-        int bit = 0;
-
-        while (!found && bit < BITS_PER_BIN) {
+static int find_lowest_unused_int(bin_t *bins) {
+    for (int n = 0, bin_index = 0; bin_index < BINS_SIZE; bin_index++) {
+        for (int bit = 0; bit < BITS_PER_BIN; bit++, n++) {
             bin_t bin_mask = 1ul << bit;
 
             if ((bins[bin_index] & bin_mask) == 0) {
-                found = true;
-            } else {
-                n++;
-                bit++;
+                return n;
             }
         }
-
-        bin_index++;
     }
 
-    if (found) {
-        printf("The lowest unused nonnegative integer is %d.\n", n);
+    return -1;
+}
+
+int main(int argc, const char * argv[]) {
+    bin_t * bins = calloc(BINS_SIZE, sizeof (bin_t));
+    int n;
+    long count = 0;
+
+    while (scanf("%d", &n) == 1 && n >= 0) {
+        record_used_int(bins, n);
+        count++;
+    }
+
+    printf("Read %ld non-negative integer(s).\n", count);
+
+    int found = find_lowest_unused_int(bins);
+
+    if (found >= 0) {
+        printf("The lowest unused non-negative integer is %d.\n", found);
     } else {
-        printf("All possible nonnegative integer values have been used.\n");
+        printf("All possible non-negative integer values have been used.\n");
     }
 
     free(bins);
