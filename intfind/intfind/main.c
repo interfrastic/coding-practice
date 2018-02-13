@@ -11,41 +11,52 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef unsigned long bin_t;
+typedef unsigned short bin_t;
 
 #define BITS_PER_BIN    (sizeof (bin_t) * CHAR_BIT)
-#define MAX_BIN_INDEX   (INT_MAX / BITS_PER_BIN)
-#define BINS_SIZE       (MAX_BIN_INDEX + 1)
-#define bin_index(n)    (n / BITS_PER_BIN)
-#define bin_mask(n)     (1ul << (n % BITS_PER_BIN))
+#define BINS_SIZE       ((INT_MAX / BITS_PER_BIN) + 1)
 
 int main(int argc, const char * argv[]) {
+    int n = 0;
+    bin_t * bins = calloc(BINS_SIZE, sizeof (bin_t));
     long count = 0;
 
-    bin_t * bins = malloc(BINS_SIZE * sizeof (bin_t));
+//    while (scanf("%d", &n) == 1) {
+    for (n = 0; n >= 0 && n < INT_MAX; n++) {
+        int bin_index = n / BITS_PER_BIN;
+        bin_t bin_mask = 1ul << (n % BITS_PER_BIN);
 
-    int n;
-
-    while (scanf("%d", &n) == 1) {
-        bins[bin_index(n)] |= bin_mask(n);
+        bins[bin_index] |= bin_mask;
         count++;
     }
 
     printf("Read %ld integer(s).\n", count);
 
-    bool taken = false;
-
+    bool found = false;
+    int bin_index = 0;
     n = 0;
 
-    while (bin_index(n) < BINS_SIZE
-           && (taken = ((bins[bin_index(n)] & bin_mask(n)) != 0))) {
-        n++;
+    while (!found && bin_index < BINS_SIZE) {
+        int bit = 0;
+
+        while (!found && bit < BITS_PER_BIN) {
+            bin_t bin_mask = 1ul << bit;
+
+            if ((bins[bin_index] & bin_mask) == 0) {
+                found = true;
+            } else {
+                n++;
+                bit++;
+            }
+        }
+
+        bin_index++;
     }
 
-    if (taken) {
-        printf("All possible integer values have been used.\n");
+    if (found) {
+        printf("The lowest unused nonnegative integer is %d.\n", n);
     } else {
-        printf("The lowest unused integer is %d.\n", n);
+        printf("All possible nonnegative integer values have been used.\n");
     }
 
     free(bins);

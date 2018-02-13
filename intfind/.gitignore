@@ -1,0 +1,3 @@
+# Ignore Xcode profiling data.
+
+/*.trace
