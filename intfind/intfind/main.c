@@ -33,12 +33,14 @@ int main(int argc, const char * argv[]) {
 
     printf("Read %ld integer(s).\n", count);
 
-    bool taken;
+    bool taken = false;
 
     n = 0;
 
-    while ((taken = (bins[bin_index(n)] & bin_mask(n))) != 0
-           && bin_index(++n) < BINS_SIZE);
+    while (bin_index(n) < BINS_SIZE
+           && (taken = ((bins[bin_index(n)] & bin_mask(n)) != 0))) {
+        n++;
+    }
 
     if (taken) {
         printf("All possible integer values have been used.\n");
