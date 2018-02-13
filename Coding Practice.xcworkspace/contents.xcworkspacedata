@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:int-spew/intspew/intspew.xcodeproj">
+      location = "group:intspew/intspew.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:intfind/intfind.xcodeproj">
    </FileRef>
 </Workspace>
