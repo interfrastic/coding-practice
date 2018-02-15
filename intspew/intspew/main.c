@@ -6,9 +6,14 @@
 //  Copyright © 2018 Michael J. Krueger. All rights reserved.
 //
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+
+static inline uint32_t rand_uint32(void) {
+    return ((uint32_t) rand() << 1) | ((uint32_t) rand() & 1);
+}
 
 int main(int argc, const char * argv[]) {
     long count = 0;
@@ -24,7 +29,7 @@ int main(int argc, const char * argv[]) {
     long i;
 
     for (i = 0; i < count; i++) {
-        printf("%d\n", rand());
+        printf("%u\n", rand_uint32());
     }
 
     return 0;
