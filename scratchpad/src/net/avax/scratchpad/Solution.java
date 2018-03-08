@@ -1,8 +1,7 @@
 package net.avax.scratchpad;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 class Solution {
 
@@ -39,84 +38,120 @@ class Solution {
     // https://leetcode.com/problems/reorganize-string/description/
 
     public String reorganizeString(String S) {
-        Map<Character, Integer> countForChr = new HashMap<>();
+        int stringLength = S.length();
 
-        for (char chr : S.toCharArray()) {
-            countForChr.put(chr, countForChr.getOrDefault(chr, 0) + 1);
+        // Determine the number of times each letter appears.
+
+        Map<Character, Integer> countForLetter = new HashMap<>();
+
+        for (char letter : S.toCharArray()) {
+            countForLetter.put(letter,
+                    countForLetter.getOrDefault(letter, 0) + 1);
         }
 
-        StringBuilder result = new StringBuilder();
-        Character prevChr = null;
+        // Separate the letters into piles of each letter, with the piles
+        // arranged from smallest to largest.
 
-        while (true) {
-            Iterator<Map.Entry<Character, Integer>> iter = countForChr
-                    .entrySet()
-                    .stream()
-                    .sorted((k1, k2) -> -k1.getValue().compareTo(k2.getValue()))
-                    .iterator();
-
-            if (iter.hasNext()) {
-                Map.Entry<Character, Integer> mostFreq = iter.next();
-                char mostFreqChr = mostFreq.getKey();
-                int mostFreqCount = mostFreq.getValue();
-
-                result.append(mostFreqChr);
-                mostFreqCount--;
-                prevChr = mostFreqChr;
-
-                if (mostFreqCount > 0) {
-                    countForChr.put(mostFreqChr, mostFreqCount);
-                } else {
-                    countForChr.remove(mostFreqChr);
-                }
-
-                if (iter.hasNext()) {
-                    Map.Entry<Character, Integer> secondMostFreq = iter.next();
-                    char secondMostFreqChr = secondMostFreq.getKey();
-                    int secondMostFreqCount = secondMostFreq.getValue();
-
-                    result.append(secondMostFreqChr);
-                    secondMostFreqCount--;
-                    prevChr = secondMostFreqChr;
-
-                    if (secondMostFreqCount > 0) {
-                        countForChr.put(secondMostFreqChr, secondMostFreqCount);
-                    } else {
-                        countForChr.remove(secondMostFreqChr);
-                    }
-                } else {
-                    break;
-                }
-            } else {
-                break;
-            }
-        }
-
-        Iterator<Map.Entry<Character, Integer>> iter = countForChr
+        Deque<Map.Entry<Character, Integer>> unusedPiles = countForLetter
                 .entrySet()
                 .stream()
-                .sorted((k1, k2) -> -k1.getValue().compareTo(k2.getValue()))
-                .iterator();
+                .sorted(Comparator.comparing(Map.Entry::getValue))
+                .collect(Collectors.toCollection(LinkedList::new));
 
-        if (iter.hasNext()) {
-            Map.Entry<Character, Integer> leftover = iter.next();
-            char leftoverChr = leftover.getKey();
-            int leftoverCount = leftover.getValue();
+        // Temporary storage for the resulting rearranged string.
 
-            if (leftoverChr == prevChr) {
-                return  "";
+        StringBuilder result = new StringBuilder();
+
+        // Primary working pile from which to draw letters to append to the
+        // result.
+
+        Map.Entry<Character, Integer> primaryPile = null;
+
+        // Secondary working pile from which to draw different letters to
+        // alternate with letters from the primary pile.
+
+        Map.Entry<Character, Integer> secondaryPile = null;
+
+        // Keep going until the result is complete; impossible input strings
+        // are handled as a special case.
+
+        while (result.length() < stringLength) {
+
+            // If there is no primary pile, grab the largest one; there should
+            // always be at least one available.
+
+            if (primaryPile == null) {
+                primaryPile = unusedPiles.removeLast();
             }
 
-            result.append(leftoverChr);
-            leftoverCount--;
+            // If there is no secondary pile, grab the largest one, if any.
 
-            if (leftoverCount > 0) {
-                countForChr.put(leftoverChr, leftoverCount);
-            } else {
-                countForChr.remove(leftoverChr);
+            if (secondaryPile == null && !unusedPiles.isEmpty()) {
+                secondaryPile = unusedPiles.removeLast();
+
+                // The primary pile may have been depleted to the point where
+                // it is now smaller than the secondary pile; when this happens,
+                // swap the primary and secondary piles to ensure that we keep
+                // drawing from the largest pile.
+
+                if (secondaryPile.getValue() > primaryPile.getValue()) {
+                    Map.Entry<Character, Integer> oldPrimaryPile = primaryPile;
+
+                    primaryPile = secondaryPile;
+                    secondaryPile = oldPrimaryPile;
+                }
             }
+
+            // If the primary pile has N letters in it, we will need to put
+            // N - 1 different letters in between those letters.  If there are
+            // not enough empty positions remaining to hold that many letters,
+            // then we should give up now because there is no possible solution.
+
+            int positionsRequired = 2 * primaryPile.getValue() - 1;
+            int positionsRemaining = stringLength - result.length();
+
+            if (positionsRequired > positionsRemaining) {
+                return "";
+            }
+
+            // Draw a letter from the primary pile and append it the result.
+
+            primaryPile = drawAndAppendLetter(primaryPile, result);
+
+            // If there is a secondary pile, Draw a letter from it and append it
+            // to the result.
+
+            secondaryPile = drawAndAppendLetter(secondaryPile, result);
         }
 
         return result.toString();
+    }
+
+    // Draw a letter from the specified pile and append it to the result,
+    // returning the smaller pile or null if the pile is now empty.  If the
+    // specified pile is null, do nothing and return null.
+
+    private static Map.Entry<Character, Integer> drawAndAppendLetter(
+            Map.Entry<Character, Integer> pile, StringBuilder result) {
+        if (pile == null) {
+            return null;
+        }
+
+        // Add the letter from the pile to the result.
+
+        result.append(pile.getKey());
+
+        // Take the letter off the pile by lowering the count, removing the
+        // entire pile when the count reaches zero.
+
+        int count = pile.getValue();
+
+        if (--count > 0) {
+            pile.setValue(count);
+        } else {
+            pile = null;
+        }
+
+        return pile;
     }
 }
