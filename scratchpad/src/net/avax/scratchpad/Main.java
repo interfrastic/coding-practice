@@ -31,9 +31,24 @@ public class Main {
                 "tndsewnllhrtwsvxenkscbivijfqnysamckzoyfnapuotmdexzkkrpmppttficzerdndssuveompqkemtbwbodrhwsfpbmkafpwyedpcowruntvymxtyyejqtajkcjakghtdwmuygecjncxzcxezgecrxonnszmqmecgvqqkdagvaaucewelchsmebikscciegzoiamovdojrmmwgbxeygibxxltemfgpogjkhobmhwquizuwvhfaiavsxhiknysdghcawcrphaykyashchyomklvghkyabxatmrkmrfsppfhgrwywtlxebgzmevefcqquvhvgounldxkdzndwybxhtycmlybhaaqvodntsvfhwcuhvuccwcsxelafyzushjhfyklvghpfvknprfouevsxmcuhiiiewcluehpmzrjzffnrptwbuhnyahrbzqvirvmffbxvrmynfcnupnukayjghpusewdwrbkhvjnveuiionefmnfxao"
 
         )) {
-            System.out.println(input + ": \""
-                    + solution.reorganizeString(input) + "\"");
+            String result = solution.reorganizeString(input);
 
+            System.out.println(input + ": \"" + result + "\"");
+
+            int adjCount = 0;
+            Character prevC = null;
+
+            for (char c : result.toCharArray()) {
+                if (prevC != null && prevC.equals(c)) {
+                    adjCount++;
+                }
+                prevC = c;
+            }
+
+            if (adjCount > 0) {
+                System.out.println("FAIL: " + adjCount
+                        + " identical adjacent charater(s)");
+            }
         }
     }
 }

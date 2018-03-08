@@ -1,6 +1,9 @@
 package net.avax.scratchpad;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 class Solution {
@@ -49,109 +52,67 @@ class Solution {
                     countForLetter.getOrDefault(letter, 0) + 1);
         }
 
-        // Separate the letters into piles of each letter, with the piles
-        // arranged from smallest to largest.
-
-        Deque<Map.Entry<Character, Integer>> unusedPiles = countForLetter
-                .entrySet()
-                .stream()
-                .sorted(Comparator.comparing(Map.Entry::getValue))
-                .collect(Collectors.toCollection(LinkedList::new));
-
-        // Temporary storage for the resulting rearranged string.
-
-        StringBuilder result = new StringBuilder();
-
-        // Primary working pile from which to draw letters to append to the
-        // result.
-
-        Map.Entry<Character, Integer> primaryPile = null;
-
-        // Secondary working pile from which to draw different letters to
-        // alternate with letters from the primary pile.
-
-        Map.Entry<Character, Integer> secondaryPile = null;
-
         // Keep going until the result is complete; impossible input strings
         // are handled as a special case.
 
+        StringBuilder result = new StringBuilder();
+
         while (result.length() < stringLength) {
 
-            // If there is no primary pile, grab the largest one; there should
-            // always be at least one available.
+            // Separate the letters into piles of each letter, sorted from
+            // largest to smallest.
 
-            if (primaryPile == null) {
-                primaryPile = unusedPiles.removeLast();
-            }
+            List<Map.Entry<Character, Integer>> piles
+                    = countForLetter.entrySet().stream()
+                    .sorted(Comparator.comparing(Map.Entry::getValue,
+                            Comparator.reverseOrder()))
+                    .collect(Collectors.toList());
 
-            // If there is no secondary pile, grab the largest one, if any.
+            // Pick out the largest pile, which should always exist and have
+            // letters in it as long as the result is incomplete.
 
-            if (secondaryPile == null && !unusedPiles.isEmpty()) {
-                secondaryPile = unusedPiles.removeLast();
+            Map.Entry<Character, Integer> largestPile = piles.get(0);
 
-                // The primary pile may have been depleted to the point where
-                // it is now smaller than the secondary pile; when this happens,
-                // swap the primary and secondary piles to ensure that we keep
-                // drawing from the largest pile.
-
-                if (secondaryPile.getValue() > primaryPile.getValue()) {
-                    Map.Entry<Character, Integer> oldPrimaryPile = primaryPile;
-
-                    primaryPile = secondaryPile;
-                    secondaryPile = oldPrimaryPile;
-                }
-            }
-
-            // If the primary pile has N letters in it, we will need to put
+            // If the largest pile has N letters in it, we will need to put
             // N - 1 different letters in between those letters.  If there are
             // not enough empty positions remaining to hold that many letters,
             // then we should give up now because there is no possible solution.
 
-            int positionsRequired = 2 * primaryPile.getValue() - 1;
+            int largestPileSize = largestPile.getValue();
+            int positionsRequired = 2 * largestPileSize - 1;
             int positionsRemaining = stringLength - result.length();
 
             if (positionsRequired > positionsRemaining) {
                 return "";
             }
 
-            // Draw a letter from the primary pile and append it the result.
+            // Draw a letter from the largest pile and append it the result.
 
-            primaryPile = drawAndAppendLetter(primaryPile, result);
+            drawAndAppendLetter(largestPile, result);
 
-            // If there is a secondary pile, Draw a letter from it and append it
-            // to the result.
+            // If there is a second-largest pile, attempt to draw a letter from
+            // it and append it to the result.
 
-            secondaryPile = drawAndAppendLetter(secondaryPile, result);
+            if (piles.size() >= 2) {
+                Map.Entry<Character, Integer> secondLargestPile = piles.get(1);
+
+                drawAndAppendLetter(secondLargestPile, result);
+            }
         }
 
         return result.toString();
     }
 
-    // Draw a letter from the specified pile and append it to the result,
-    // returning the smaller pile or null if the pile is now empty.  If the
-    // specified pile is null, do nothing and return null.
+    // Draw a letter from the specified pile and append it to the result; if
+    // the pile is empty, do nothing.
 
-    private static Map.Entry<Character, Integer> drawAndAppendLetter(
+    private static void drawAndAppendLetter(
             Map.Entry<Character, Integer> pile, StringBuilder result) {
-        if (pile == null) {
-            return null;
-        }
-
-        // Add the letter from the pile to the result.
-
-        result.append(pile.getKey());
-
-        // Take the letter off the pile by lowering the count, removing the
-        // entire pile when the count reaches zero.
-
         int count = pile.getValue();
 
-        if (--count > 0) {
-            pile.setValue(count);
-        } else {
-            pile = null;
+        if (count > 0) {
+            result.append(pile.getKey());
+            pile.setValue(count - 1);
         }
-
-        return pile;
     }
 }
