@@ -54,12 +54,12 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        TreeNode n = new TreeNode(3);
+        Solution solution = new Solution();
 
-        n.left = new TreeNode(9);
-        n.right = new TreeNode(20);
-        n.right.left = new TreeNode(15);
-        n.right.right = new TreeNode(7);
+        TreeNode n = solution.buildTree(
+                new int[]{9, 3, 15, 20, 7},
+                new int[]{9, 15, 7, 20, 3}
+        );
 
         printVals(n, Traversal.PRE_ORDER);
         printVals(n, Traversal.IN_ORDER);
