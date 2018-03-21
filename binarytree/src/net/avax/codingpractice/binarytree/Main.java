@@ -5,62 +5,50 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Main {
-    private static void getPreOrderVals(TreeNode n, List<Integer> vals) {
-        if (n == null || vals == null) {
+    private enum Traversal {
+        PRE_ORDER("preorder"),
+        IN_ORDER("inorder"),
+        POST_ORDER("postorder");
+
+        private final String s;
+
+        Traversal(String s) {
+            this.s = s;
+        }
+
+        public String toString() {
+            return s;
+        }
+    }
+
+    private static void getVals(TreeNode n, List<Integer> vals, Traversal t) {
+        if (n == null || vals == null || t == null) {
             return;
         }
 
-        vals.add(n.val);
-        getPreOrderVals(n.left, vals);
-        getPreOrderVals(n.right, vals);
-    }
-
-    private static void getInOrderVals(TreeNode n, List<Integer> vals) {
-        if (n == null || vals == null) {
-            return;
+        if (t == Traversal.PRE_ORDER) {
+            vals.add(n.val);
         }
 
-        getInOrderVals(n.left, vals);
-        vals.add(n.val);
-        getInOrderVals(n.right, vals);
-    }
+        getVals(n.left, vals, t);
 
-    private static void getPostOrderVals(TreeNode n, List<Integer> vals) {
-        if (n == null || vals == null) {
-            return;
+        if (t == Traversal.IN_ORDER) {
+            vals.add(n.val);
         }
 
-        getPostOrderVals(n.left, vals);
-        getPostOrderVals(n.right, vals);
-        vals.add(n.val);
+        getVals(n.right, vals, t);
+
+        if (t == Traversal.POST_ORDER) {
+            vals.add(n.val);
+        }
     }
 
-    private static void printPreOrder(TreeNode n) {
+    private static void printVals(TreeNode n, Traversal t) {
         List<Integer> vals = new ArrayList<>();
 
-        getPreOrderVals(n, vals);
+        getVals(n, vals, t);
 
-        System.out.println("preorder = [" + vals.stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(",")) + "]");
-    }
-
-    private static void printInOrder(TreeNode n) {
-        List<Integer> vals = new ArrayList<>();
-
-        getInOrderVals(n, vals);
-
-        System.out.println("inorder = [" + vals.stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(",")) + "]");
-    }
-
-    private static void printPostOrder(TreeNode n) {
-        List<Integer> vals = new ArrayList<>();
-
-        getPostOrderVals(n, vals);
-
-        System.out.println("postorder = [" + vals.stream()
+        System.out.println(t + " = [" + vals.stream()
                 .map(Object::toString)
                 .collect(Collectors.joining(",")) + "]");
     }
@@ -73,8 +61,8 @@ public class Main {
         n.right.left = new TreeNode(15);
         n.right.right = new TreeNode(7);
 
-        printPreOrder(n);
-        printInOrder(n);
-        printPostOrder(n);
+        printVals(n, Traversal.PRE_ORDER);
+        printVals(n, Traversal.IN_ORDER);
+        printVals(n, Traversal.POST_ORDER);
     }
 }
