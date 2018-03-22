@@ -56,13 +56,33 @@ public class Main {
     public static void main(String[] args) {
         Solution solution = new Solution();
 
-        TreeNode n = solution.buildTree(
+        TreeNode node = solution.buildTree(
                 new int[]{9, 3, 15, 20, 7},
                 new int[]{9, 15, 7, 20, 3}
         );
 
-        printVals(n, Traversal.PRE_ORDER);
-        printVals(n, Traversal.IN_ORDER);
-        printVals(n, Traversal.POST_ORDER);
+        printVals(node, Traversal.PRE_ORDER);
+        printVals(node, Traversal.IN_ORDER);
+        printVals(node, Traversal.POST_ORDER);
+
+        node = solution.buildTree(
+                new int[]{2, 3, 1},
+                new int[]{3, 2, 1}
+        );
+
+        System.out.println();
+        printVals(node, Traversal.PRE_ORDER);
+        printVals(node, Traversal.IN_ORDER);
+        printVals(node, Traversal.POST_ORDER);
+
+        node = solution.buildTree(
+                new int[]{1, 3, 2},
+                new int[]{3, 2, 1}
+        );
+
+        System.out.println();
+        printVals(node, Traversal.PRE_ORDER);
+        printVals(node, Traversal.IN_ORDER);
+        printVals(node, Traversal.POST_ORDER);
     }
 }
