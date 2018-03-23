@@ -1,5 +1,8 @@
 package net.avax.codingpractice.tictactoe;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,7 +106,11 @@ public class Main {
     }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
+        System.setOut(new PrintStream(new FileOutputStream("output.log")));
+
+        long startTime = System.currentTimeMillis();
+
         int size = 3;
 
         List<List<List<Symbol>>> boards = getBoards(size);
@@ -117,8 +124,12 @@ public class Main {
             System.out.println();
         }
 
+        long endTime = System.currentTimeMillis();
+
+        double seconds = (endTime - startTime) / 1000;
+
         System.out.println("Found " + boards.size() + " possible " + size
-                + " × " + size + " board(s)");
+                + " × " + size + " board(s) in " + seconds + " second(s)");
     }
 
     private static void printBoard(List<List<Symbol>> board) {
