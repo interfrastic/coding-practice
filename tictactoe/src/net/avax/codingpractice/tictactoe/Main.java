@@ -1,10 +1,9 @@
 package net.avax.codingpractice.tictactoe;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.lang.Integer.min;
 
 public class Main {
     enum Symbol {
@@ -12,7 +11,7 @@ public class Main {
         X("X"),
         O("O");
 
-        private String string;
+        private final String string;
 
         Symbol(String string) {
             this.string = string;
@@ -45,11 +44,7 @@ public class Main {
             for (List<Symbol> finalCombo : getCombos(size - 1)) {
                 List<Symbol> combo = new ArrayList<>(initialCombo);
 
-                for (Symbol symbol : finalCombo) {
-
-                    combo.add(symbol);
-                }
-
+                combo.addAll(finalCombo);
                 combos.add(combo);
             }
         }
@@ -83,11 +78,9 @@ public class Main {
 
         if (initialRows.size() == size - 1) {
             for (List<Symbol> finalRow : getCombos(size)) {
-                List<List<Symbol>> board = new ArrayList<>();
+                List<List<Symbol>> board = new ArrayList<>(initialRows);
 
-                board.addAll(initialRows);
                 board.add(finalRow);
-
                 boards.add(board);
             }
 
@@ -106,33 +99,41 @@ public class Main {
     }
 
 
-    public static void main(String[] args) throws FileNotFoundException {
-        System.setOut(new PrintStream(new FileOutputStream("output.log")));
-
-        long startTime = System.currentTimeMillis();
-
+    public static void main(String[] args) {
         int size = 3;
+        int limit = 10;
+
+        long start = System.currentTimeMillis();
 
         List<List<List<Symbol>>> boards = getBoards(size);
 
-        for (List<List<Symbol>> board : boards) {
-            printBoard(board);
+        double elapsed = (System.currentTimeMillis() - start) / 1000;
 
-            for (int i = 0; i < size; i++) {
-                System.out.print("-");
-            }
-            System.out.println();
+        int resultCount = boards.size();
+        int showCount = min(resultCount, limit);
+
+        System.out.println();
+        System.out.println("Initial " + showCount + " board(s):");
+
+        for (int i = 0; i < showCount; i++) {
+            printBoard(boards.get(i));
         }
 
-        long endTime = System.currentTimeMillis();
+        System.out.println();
+        System.out.println("Final " + showCount + " board(s):");
 
-        double seconds = (endTime - startTime) / 1000;
+        for (int i = resultCount - showCount; i < resultCount; i++) {
+            printBoard(boards.get(i));
+        }
 
-        System.out.println("Found " + boards.size() + " possible " + size
-                + " × " + size + " board(s) in " + seconds + " second(s)");
+        System.out.println();
+        System.out.println("Found " + resultCount + " possible " + size + " × "
+                + size + " board(s) in " + elapsed + " seconds");
     }
 
     private static void printBoard(List<List<Symbol>> board) {
+        System.out.println();
+
         for (List<Symbol> row : board) {
             for (Symbol symbol : row) {
                 System.out.print(symbol);
