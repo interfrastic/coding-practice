@@ -100,7 +100,7 @@ public class Main {
 
 
     public static void main(String[] args) {
-        int size = 3;
+        int size = 4;
         int limit = 10;
 
         long start = System.currentTimeMillis();
