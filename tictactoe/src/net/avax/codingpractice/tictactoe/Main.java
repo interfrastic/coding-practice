@@ -1,7 +1,6 @@
 package net.avax.codingpractice.tictactoe;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 import static java.lang.Integer.min;
 
@@ -22,38 +21,43 @@ public class Main {
         }
     }
 
-    private static List<List<Symbol>> getBoards(int size) {
-        int symbolCount = size * size;
-        Symbol zeroSymbol = Symbol.values()[0];
-        List<Symbol> zeroBoard = new ArrayList<>();
-
-        for (int index = 0; index < symbolCount; index++) {
-            zeroBoard.add(zeroSymbol);
+    private static Symbol[][] getBoards(int size) {
+        if (size == 0) {
+            return new Symbol[0][];
         }
 
-        List<List<Symbol>> boards = new ArrayList<>();
-        List<Symbol> board = new ArrayList<>(zeroBoard);
+        Symbol[] symbols = Symbol.values();
+        Symbol zeroSymbol = symbols[0];
+        int symbolCount = symbols.length;
+        int boardSpaceCount = size * size;
+        int boardCount = (int) Math.pow(symbolCount, boardSpaceCount);
 
-        while (true) {
-            boards.add(board);
+        Symbol[] zeroBoard = new Symbol[boardSpaceCount];
 
-            if ((board = increment(board)).equals(zeroBoard)) {
-                break;
-            }
+        for (int i = 0; i < boardSpaceCount; i++) {
+            zeroBoard[i] = zeroSymbol;
+        }
+
+        Symbol[][] boards = new Symbol[boardCount][];
+        Symbol[] board = Arrays.copyOf(zeroBoard, zeroBoard.length);
+
+        for (int i = 0; i < boardCount; i++) {
+            boards[i] = board;
+
+            board = increment(board);
         }
 
         return boards;
     }
 
-    private static List<Symbol> increment(List<Symbol> symbols) {
-        List<Symbol> incrementedSymbols = new ArrayList<>(symbols);
-        int size = symbols.size();
+    private static Symbol[] increment(Symbol[] symbols) {
+        int size = symbols.length;
+        Symbol[] incrementedSymbols = Arrays.copyOf(symbols, symbols.length);
 
-        for (int index = size - 1; index >= 0; index--) {
-            Symbol incrementedSymbol = increment(incrementedSymbols.get
-                    (index));
+        for (int i = size - 1; i >= 0; i--) {
+            Symbol incrementedSymbol = increment(incrementedSymbols[i]);
 
-            incrementedSymbols.set(index, incrementedSymbol);
+            incrementedSymbols[i] = incrementedSymbol;
 
             if (incrementedSymbol.ordinal() % size != 0) {
                 break;
@@ -70,30 +74,30 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        int size = 3;
+        int size = 4;
         int limit = 10;
 
         long start = System.currentTimeMillis();
 
-        List<List<Symbol>> boards = getBoards(size);
+        Symbol[][] boards = getBoards(size);
 
         double elapsed = (System.currentTimeMillis() - start) / 1000;
 
-        int resultCount = boards.size();
+        int resultCount = boards.length;
         int showCount = min(resultCount, limit);
 
         System.out.println();
         System.out.println("Initial " + showCount + " board(s):");
 
         for (int i = 0; i < showCount; i++) {
-            printBoard(boards.get(i), size);
+            printBoard(boards[i], size);
         }
 
         System.out.println();
         System.out.println("Final " + showCount + " board(s):");
 
         for (int i = resultCount - showCount; i < resultCount; i++) {
-            printBoard(boards.get(i), size);
+            printBoard(boards[i], size);
         }
 
         System.out.println();
@@ -102,7 +106,7 @@ public class Main {
                 + size + " board(s) in " + elapsed + " seconds");
     }
 
-    private static void printBoard(List<Symbol> symbols, int size) {
+    private static void printBoard(Symbol[] symbols, int size) {
         System.out.println();
 
         int i = 0;
