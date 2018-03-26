@@ -22,82 +22,52 @@ public class Main {
         }
     }
 
-    private static List<List<Symbol>> getCombos(int size) {
-        if (size <= 0) {
-            return List.of();
+    private static List<List<Symbol>> getBoards(int size) {
+        int symbolCount = size * size;
+        Symbol zeroSymbol = Symbol.values()[0];
+        List<Symbol> zeroBoard = new ArrayList<>();
+
+        for (int index = 0; index < symbolCount; index++) {
+            zeroBoard.add(zeroSymbol);
         }
 
-        List<List<Symbol>> combos = new ArrayList<>();
+        List<List<Symbol>> boards = new ArrayList<>();
+        List<Symbol> board = new ArrayList<>(zeroBoard);
 
-        if (size == 1) {
-            for (Symbol symbol : Symbol.values()) {
-                List<Symbol> combo = new ArrayList<>();
+        while (true) {
+            boards.add(board);
 
-                combo.add(symbol);
-                combos.add(combo);
+            if ((board = increment(board)).equals(zeroBoard)) {
+                break;
             }
-
-            return combos;
-        }
-
-        for (List<Symbol> initialCombo : getCombos(1)) {
-            for (List<Symbol> finalCombo : getCombos(size - 1)) {
-                List<Symbol> combo = new ArrayList<>(initialCombo);
-
-                combo.addAll(finalCombo);
-                combos.add(combo);
-            }
-        }
-
-        return combos;
-    }
-
-    private static List<List<List<Symbol>>> getBoards(int size) {
-        List<List<List<Symbol>>> boards = new ArrayList<>();
-
-        for (List<Symbol> firstRow : getCombos(size)) {
-            boards.addAll(getBoards(List.of(firstRow)));
         }
 
         return boards;
     }
 
-    private static List<List<List<Symbol>>> getBoards(
-            List<List<Symbol>> initialRows) {
-        if (initialRows.size() == 0) {
-            return List.of();
-        }
+    private static List<Symbol> increment(List<Symbol> symbols) {
+        List<Symbol> incrementedSymbols = new ArrayList<>(symbols);
+        int size = symbols.size();
 
-        int size = initialRows.get(0).size();
+        for (int index = size - 1; index >= 0; index--) {
+            Symbol incrementedSymbol = increment(incrementedSymbols.get
+                    (index));
 
-        if (initialRows.size() == size) {
-            return List.of(initialRows);
-        }
+            incrementedSymbols.set(index, incrementedSymbol);
 
-        List<List<List<Symbol>>> boards = new ArrayList<>();
-
-        if (initialRows.size() == size - 1) {
-            for (List<Symbol> finalRow : getCombos(size)) {
-                List<List<Symbol>> board = new ArrayList<>(initialRows);
-
-                board.add(finalRow);
-                boards.add(board);
+            if (incrementedSymbol.ordinal() % size != 0) {
+                break;
             }
-
-            return boards;
         }
 
-        for (List<Symbol> nextRow : getCombos(size)) {
-            List<List<Symbol>> newInitialRows = new ArrayList<>(initialRows);
-
-            newInitialRows.add(nextRow);
-
-            boards.addAll(getBoards(newInitialRows));
-        }
-
-        return boards;
+        return incrementedSymbols;
     }
 
+    private static Symbol increment(Symbol symbol) {
+        Symbol[] values = Symbol.values();
+
+        return values[(symbol.ordinal() + 1) % values.length];
+    }
 
     public static void main(String[] args) {
         int size = 4;
@@ -105,7 +75,7 @@ public class Main {
 
         long start = System.currentTimeMillis();
 
-        List<List<List<Symbol>>> boards = getBoards(size);
+        List<List<Symbol>> boards = getBoards(size);
 
         double elapsed = (System.currentTimeMillis() - start) / 1000;
 
@@ -116,30 +86,33 @@ public class Main {
         System.out.println("Initial " + showCount + " board(s):");
 
         for (int i = 0; i < showCount; i++) {
-            printBoard(boards.get(i));
+            printBoard(boards.get(i), size);
         }
 
         System.out.println();
         System.out.println("Final " + showCount + " board(s):");
 
         for (int i = resultCount - showCount; i < resultCount; i++) {
-            printBoard(boards.get(i));
+            printBoard(boards.get(i), size);
         }
 
         System.out.println();
-        System.out.println("Found " + resultCount + " possible " + size + " × "
+        System.out.println("Found " + resultCount + " possible " + size +
+                " × "
                 + size + " board(s) in " + elapsed + " seconds");
     }
 
-    private static void printBoard(List<List<Symbol>> board) {
+    private static void printBoard(List<Symbol> symbols, int size) {
         System.out.println();
 
-        for (List<Symbol> row : board) {
-            for (Symbol symbol : row) {
-                System.out.print(symbol);
-            }
+        int i = 0;
 
-            System.out.println();
+        for (Symbol symbol : symbols) {
+            System.out.print(symbol);
+
+            if (++i % size == 0) {
+                System.out.println();
+            }
         }
     }
 }
