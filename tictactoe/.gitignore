@@ -1,3 +1,9 @@
+# Transient files when connecting VirtualVM to IntelliJ:
+#
+# [No official reference found.]
+
+.attach_pid*
+
 # JetBrains .gitignore:
 #
 # https://raw.githubusercontent.com/github/gitignore/master/Global/JetBrains.gitignore
