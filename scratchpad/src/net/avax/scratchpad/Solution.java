@@ -1,118 +1,205 @@
 package net.avax.scratchpad;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 class Solution {
 
-    // 2018-02-07 techlet problem:
+    // 2018-03-28 techlet problem:
     //
-    // https://leetcode.com/problems/minimum-size-subarray-sum/description/
+    // https://leetcode.com/problems/largest-number/description/
+    //
+    // 221 / 221 test cases passed.
+    // Status: Accepted
+    // Runtime: 146 ms
+    // Your runtime beats 9.76 % of java submissions.
+    //
+    // https://leetcode.com/submissions/detail/147427310/
 
-    public int minSubArrayLen(int s, int[] nums) {
-        int result = 0;
-
-        for (int i = 0; i < nums.length; i++) {
-            long sum = 0;
-
-            for (int j = i; j < nums.length; j++) {
-                sum += nums[j];
-
-                if (sum >= s) {
-                    int len = j - i + 1;
-
-                    if (len <= result || result == 0) {
-                        result = len;
-                    }
-
-                    break;
-                }
-            }
-        }
-
-        return result;
+    public String largestNumber(int[] nums) {
+        return Arrays.stream(nums).boxed().map(i -> i.toString())
+                .sorted((a, b) -> Long.compare(
+                        Long.valueOf(b + a),
+                        Long.valueOf(a + b)))
+                .collect(Collectors.joining())
+                .replaceFirst("^0+", "0");
     }
 
-    // 2018-02-07 techlet bonus problem:
+    // 2018-03-28 techlet bonus problem:
     //
-    // https://leetcode.com/problems/reorganize-string/description/
+    // https://leetcode.com/problems/search-a-2d-matrix/description/
+    //
+    // 136 / 136 test cases passed.
+    // Status: Accepted
+    // Runtime: 11 ms
+    // Your runtime beats 88.36 % of java submissions.
+    //
+    // https://leetcode.com/submissions/detail/147592868/
 
-    public String reorganizeString(String S) {
-        int stringLength = S.length();
+    private static int getPossibleRowIndex(int[][] matrix, int target,
+                                           int rowBeginIndex, int rowEndIndex) {
 
-        // Determine the number of times each letter appears.
+        // If the search window is not valid, then the target cannot be in it.
 
-        Map<Character, Integer> countForLetter = new HashMap<>();
+        int maxRowEndIndex = matrix.length;
+        int maxRowIndex = maxRowEndIndex - 1;
 
-        for (char letter : S.toCharArray()) {
-            countForLetter.put(letter,
-                    countForLetter.getOrDefault(letter, 0) + 1);
+        if (rowBeginIndex < 0
+                || rowBeginIndex > maxRowIndex
+                || rowEndIndex <= rowBeginIndex
+                || rowEndIndex > maxRowEndIndex) {
+            return -1;
         }
 
-        // Keep going until the result is complete; impossible input strings
-        // are handled as a special case.
+        // Find the row in the middle of the search window.
 
-        StringBuilder result = new StringBuilder();
+        int middleRowIndex = rowBeginIndex + (rowEndIndex - rowBeginIndex) / 2;
+        int[] row = matrix[middleRowIndex];
+        int maxColIndex = row.length - 1;
 
-        while (result.length() < stringLength) {
+        // If the middle row is empty, the target could be either below or
+        // above it.
 
-            // Separate the letters into piles of each letter, sorted from
-            // largest to smallest.
+        if (maxColIndex < 0) {
 
-            List<Map.Entry<Character, Integer>> piles
-                    = countForLetter.entrySet().stream()
-                    .sorted(Comparator.comparing(Map.Entry::getValue,
-                            Comparator.reverseOrder()))
-                    .collect(Collectors.toList());
+            // First try looking below.  (The ending index is exclusive.)
 
-            // Pick out the largest pile, which should always exist and have
-            // letters in it as long as the result is incomplete.
+            int lowerRowIndex = getPossibleRowIndex(matrix, target,
+                    rowBeginIndex, middleRowIndex);
 
-            Map.Entry<Character, Integer> largestPile = piles.get(0);
-
-            // If the largest pile has N letters in it, we will need to put
-            // N - 1 different letters in between those letters.  If there are
-            // not enough empty positions remaining to hold that many letters,
-            // then we should give up now because there is no possible solution.
-
-            int largestPileSize = largestPile.getValue();
-            int positionsRequired = 2 * largestPileSize - 1;
-            int positionsRemaining = stringLength - result.length();
-
-            if (positionsRequired > positionsRemaining) {
-                return "";
+            if (lowerRowIndex >= 0) {
+                return lowerRowIndex;
             }
 
-            // Draw a letter from the largest pile and append it the result.
+            // Now try looking above.  (The beginning index is inclusive.)
 
-            drawAndAppendLetter(largestPile, result);
-
-            // If there is a second-largest pile, attempt to draw a letter from
-            // it and append it to the result.
-
-            if (piles.size() >= 2) {
-                Map.Entry<Character, Integer> secondLargestPile = piles.get(1);
-
-                drawAndAppendLetter(secondLargestPile, result);
-            }
+            return getPossibleRowIndex(matrix, target,
+                    middleRowIndex + 1, rowEndIndex);
         }
 
-        return result.toString();
+        // If this is the bottom row and the target is smaller than the value in
+        // the initial column, then the target is not in the search window.
+
+        int initialColValue = row[0];
+
+        if (middleRowIndex == 0 && target < initialColValue) {
+            return -1;
+        }
+
+        // If this is the top row and the target is larger than the value in
+        // the final column, then the target is not in the search window.
+
+        int finalColValue = row[maxColIndex];
+
+        if (middleRowIndex == maxRowIndex && target > finalColValue) {
+            return -1;
+        }
+
+        // We know the target could be in the middle row if it falls within the
+        // bounds of its initial and final column values.
+
+        if (target >= initialColValue && target <= finalColValue) {
+            return middleRowIndex;
+        }
+
+        if (target > finalColValue) {
+
+            // If the target is larger than the value in the final column of the
+            // middle row, then look for it somewhere between the row after the
+            // middle row and the top of the search window.  (The beginning
+            // index is inclusive.)
+
+            rowBeginIndex = middleRowIndex + 1;
+        } else {
+
+            // Otherwise, the target must be smaller than the value in the
+            // initial column of the middle row, so look for it somewhere
+            // between the bottom of the search window and the row before the
+            // middle row.  (The ending index is exclusive.)
+
+            rowEndIndex = middleRowIndex;
+        }
+
+        return getPossibleRowIndex(matrix, target, rowBeginIndex, rowEndIndex);
     }
 
-    // Draw a letter from the specified pile and append it to the result; if
-    // the pile is empty, do nothing.
+    private static boolean isTargetInRow(int[] row, int target,
+                                         int beginIndex, int endIndex) {
 
-    private static void drawAndAppendLetter(
-            Map.Entry<Character, Integer> pile, StringBuilder result) {
-        int count = pile.getValue();
+        // If the search window is not valid, then the target cannot be in it.
 
-        if (count > 0) {
-            result.append(pile.getKey());
-            pile.setValue(count - 1);
+        int maxEndIndex = row.length;
+        int maxIndex = row.length - 1;
+
+        if (beginIndex < 0
+                || beginIndex > maxIndex
+                || endIndex <= beginIndex
+                || endIndex > maxEndIndex) {
+            return false;
         }
+
+        // Find the column in the middle of the row.
+
+        int middleColIndex = beginIndex + (endIndex - beginIndex) / 2;
+
+        // If the middle column is out of range, give up.
+
+        if (middleColIndex < 0 || middleColIndex > maxIndex) {
+            return false;
+        }
+
+        // Check for a match.
+
+        int middleColValue = row[middleColIndex];
+
+        if (target == middleColValue) {
+
+            // Bingo!
+
+            return true;
+        }
+
+        if (target > middleColValue) {
+
+            // If the target is larger than the value in the middle column, then
+            // look for it somewhere between the column after the middle column
+            // and the end of the search window.  (The beginning index is
+            // inclusive.)
+
+            beginIndex = middleColIndex + 1;
+        } else {
+
+            // Otherwise, the target must be smaller than the value in the
+            // initial column of the middle row, so look for it somewhere
+            // between the bottom of the search window and the row before the
+            // middle row.  (The ending index is exclusive.)
+
+            endIndex = middleColIndex;
+        }
+
+        return isTargetInRow(row, target, beginIndex, endIndex);
+    }
+
+    public boolean searchMatrix(int[][] matrix, int target) {
+
+        // First do a binary search through the rows to see if one of them could
+        // contain the target.
+
+        int possibleRowIndex = getPossibleRowIndex(matrix, target,
+                0, matrix.length);
+
+        if (possibleRowIndex < 0) {
+
+            // No dice.
+
+            return false;
+        }
+
+        // Now do a binary search through the columns of the possible row to
+        // see if it contains the target.
+
+        int[] possibleRow = matrix[possibleRowIndex];
+
+        return isTargetInRow(possibleRow, target, 0, possibleRow.length);
     }
 }
