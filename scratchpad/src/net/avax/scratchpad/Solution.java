@@ -31,14 +31,14 @@ class Solution {
     //
     // 136 / 136 test cases passed.
     // Status: Accepted
-    // Runtime: 121 ms
+    // Runtime: 130 ms
     // Your runtime beats 0.22 % of java submissions.
     //
-    // https://leetcode.com/submissions/detail/147730513/
+    // https://leetcode.com/submissions/detail/147733268/
 
     public boolean searchMatrix(int[][] matrix, int target) {
-        return Arrays.stream(matrix)
-                .map(row -> Arrays.stream(row).boxed()
+        return Arrays.stream(matrix).parallel()
+                .map(row -> Arrays.stream(row).parallel().boxed()
                         .collect(Collectors.toSet()))
                 .flatMap(row -> row.stream())
                 .collect(Collectors.toSet()).contains(target);
