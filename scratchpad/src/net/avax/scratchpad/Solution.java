@@ -34,172 +34,146 @@ class Solution {
     // Runtime: 11 ms
     // Your runtime beats 88.36 % of java submissions.
     //
-    // https://leetcode.com/submissions/detail/147592868/
+    // https://leetcode.com/submissions/detail/147726352/
 
-    private static int getPossibleRowIndex(int[][] matrix, int target,
-                                           int rowBeginIndex, int rowEndIndex) {
+    private static boolean searchSubMatrix(int[][] matrix, int target,
+                                           int rowBeginIndex, int rowEndIndex,
+                                           int colBeginIndex, int colEndIndex) {
 
-        // If the search window is not valid, then the target cannot be in it.
+        // Find the row in the middle of the row window.
 
-        int maxRowEndIndex = matrix.length;
-        int maxRowIndex = maxRowEndIndex - 1;
+        int rowCount = rowEndIndex - rowBeginIndex;
+        int midRowIndex = rowBeginIndex + rowCount / 2;
+        int[] midRow = matrix[midRowIndex];
 
-        if (rowBeginIndex < 0
-                || rowBeginIndex > maxRowIndex
-                || rowEndIndex <= rowBeginIndex
-                || rowEndIndex > maxRowEndIndex) {
-            return -1;
-        }
+        if (rowCount > 1) {
 
-        // Find the row in the middle of the search window.
+            // There are multiple rows to consider, so attempt to narrow the
+            // row window.
 
-        int middleRowIndex = rowBeginIndex + (rowEndIndex - rowBeginIndex) / 2;
-        int[] row = matrix[middleRowIndex];
-        int maxColIndex = row.length - 1;
+            int lowColIndex = colBeginIndex;
+            int lowColValue = midRow[lowColIndex];
 
-        // If the middle row is empty, the target could be either below or
-        // above it.
+            if (target == lowColValue) {
 
-        if (maxColIndex < 0) {
+                // We got lucky: the lowest column is the target.
 
-            // First try looking below.  (The ending index is exclusive.)
-
-            int lowerRowIndex = getPossibleRowIndex(matrix, target,
-                    rowBeginIndex, middleRowIndex);
-
-            if (lowerRowIndex >= 0) {
-                return lowerRowIndex;
+                return true;
             }
 
-            // Now try looking above.  (The beginning index is inclusive.)
+            int highColIndex = colEndIndex - 1;
+            int highColValue = midRow[highColIndex];
 
-            return getPossibleRowIndex(matrix, target,
-                    middleRowIndex + 1, rowEndIndex);
-        }
+            if (target == highColValue) {
 
-        // If this is the bottom row and the target is smaller than the value in
-        // the initial column, then the target is not in the search window.
+                // We got lucky: the highest column is the target.
 
-        int initialColValue = row[0];
+                return true;
+            }
 
-        if (middleRowIndex == 0 && target < initialColValue) {
-            return -1;
-        }
+            // Narrow the row window, and possibly also the column window, based
+            // on the lowest and highest column values in the middle row.
 
-        // If this is the top row and the target is larger than the value in
-        // the final column, then the target is not in the search window.
+            if (target < lowColValue) {
 
-        int finalColValue = row[maxColIndex];
+                // If the target is smaller than the lowest column value in the
+                // middle row, then look for it somewhere between the top of the
+                // search window and the row above the middle row.  (The ending
+                // index is exclusive.)
 
-        if (middleRowIndex == maxRowIndex && target > finalColValue) {
-            return -1;
-        }
+                rowEndIndex = midRowIndex;
+            } else if (target > highColValue) {
 
-        // We know the target could be in the middle row if it falls within the
-        // bounds of its initial and final column values.
+                // If the target is larger than the highest column value in the
+                // middle row, then look for it somewhere between the row below
+                // the middle row and the bottom of the search window.  (The
+                // beginning index is inclusive.)
 
-        if (target >= initialColValue && target <= finalColValue) {
-            return middleRowIndex;
-        }
+                rowBeginIndex = midRowIndex + 1;
+            } else {
 
-        if (target > finalColValue) {
+                // If the target is greater than the lowest column value and
+                // less than the highest column value, then we can narrow the
+                // search to the columns between them on the middle row.
+                // (The beginning index is inclusive and the ending index is
+                // exclusive.)
 
-            // If the target is larger than the value in the final column of the
-            // middle row, then look for it somewhere between the row after the
-            // middle row and the top of the search window.  (The beginning
-            // index is inclusive.)
-
-            rowBeginIndex = middleRowIndex + 1;
+                rowBeginIndex = midRowIndex;
+                rowEndIndex = midRowIndex + 1;
+                colBeginIndex = lowColIndex + 1;
+                colEndIndex = highColIndex;
+            }
         } else {
 
-            // Otherwise, the target must be smaller than the value in the
-            // initial column of the middle row, so look for it somewhere
-            // between the bottom of the search window and the row before the
-            // middle row.  (The ending index is exclusive.)
+            // There is only one row to consider, so check the value in the
+            // middle of the current column window.
 
-            rowEndIndex = middleRowIndex;
+            int midColIndex = colBeginIndex + (colEndIndex - colBeginIndex) / 2;
+            int midColValue = matrix[midRowIndex][midColIndex];
+
+            // Did we find the target in the middle column?
+
+            if (target == midColValue) {
+                return true;
+            }
+
+            // If not, further narrow the column window based on the middle
+            // column value.
+
+            if (target < midColValue) {
+
+                // If the target is smaller than the middle column value,
+                // then look for it somewhere between the left edge of the
+                // search window and the column to the left of the middle
+                // column.  (The ending index is exclusive.)
+
+                colEndIndex = midColIndex;
+            } else {
+
+                // If the target is larger than the middle column value, then
+                // look for it somewhere between the column to the right of
+                // the middle column and the right edge of the search window.
+                // (The beginning index is inclusive.)
+
+                colBeginIndex = midColIndex + 1;
+            }
         }
 
-        return getPossibleRowIndex(matrix, target, rowBeginIndex, rowEndIndex);
-    }
+        // Now that the row window, the column window, or both have been
+        // narrowed, check to make sure they are still open; if either one has
+        // closed, then the target must not be in the matrix.
 
-    private static boolean isTargetInRow(int[] row, int target,
-                                         int beginIndex, int endIndex) {
-
-        // If the search window is not valid, then the target cannot be in it.
-
-        int maxEndIndex = row.length;
-        int maxIndex = row.length - 1;
-
-        if (beginIndex < 0
-                || beginIndex > maxIndex
-                || endIndex <= beginIndex
-                || endIndex > maxEndIndex) {
+        if (rowBeginIndex >= rowEndIndex || colBeginIndex >= colEndIndex) {
             return false;
         }
 
-        // Find the column in the middle of the row.
+        // Repeat the search on the smaller area.
 
-        int middleColIndex = beginIndex + (endIndex - beginIndex) / 2;
-
-        // If the middle column is out of range, give up.
-
-        if (middleColIndex < 0 || middleColIndex > maxIndex) {
-            return false;
-        }
-
-        // Check for a match.
-
-        int middleColValue = row[middleColIndex];
-
-        if (target == middleColValue) {
-
-            // Bingo!
-
-            return true;
-        }
-
-        if (target > middleColValue) {
-
-            // If the target is larger than the value in the middle column, then
-            // look for it somewhere between the column after the middle column
-            // and the end of the search window.  (The beginning index is
-            // inclusive.)
-
-            beginIndex = middleColIndex + 1;
-        } else {
-
-            // Otherwise, the target must be smaller than the value in the
-            // initial column of the middle row, so look for it somewhere
-            // between the bottom of the search window and the row before the
-            // middle row.  (The ending index is exclusive.)
-
-            endIndex = middleColIndex;
-        }
-
-        return isTargetInRow(row, target, beginIndex, endIndex);
+        return searchSubMatrix(matrix, target, rowBeginIndex, rowEndIndex,
+                colBeginIndex, colEndIndex);
     }
 
     public boolean searchMatrix(int[][] matrix, int target) {
 
-        // First do a binary search through the rows to see if one of them could
-        // contain the target.
+        // The target can't be in a 0 x 0 matrix, which contains no values.
 
-        int possibleRowIndex = getPossibleRowIndex(matrix, target,
-                0, matrix.length);
+        int maxRowEndIndex = matrix.length;
 
-        if (possibleRowIndex < 0) {
-
-            // No dice.
-
+        if (maxRowEndIndex == 0) {
             return false;
         }
 
-        // Now do a binary search through the columns of the possible row to
-        // see if it contains the target.
+        // The target can't be in an m x 0 matrix, which contains no values.
 
-        int[] possibleRow = matrix[possibleRowIndex];
+        int maxColEndIndex = matrix[0].length;
 
-        return isTargetInRow(possibleRow, target, 0, possibleRow.length);
+        if (maxColEndIndex == 0) {
+            return false;
+        }
+
+        // Search an m x n matrix containing at least one value.
+
+        return searchSubMatrix(matrix, target, 0, maxRowEndIndex, 0,
+                maxColEndIndex);
     }
 }
