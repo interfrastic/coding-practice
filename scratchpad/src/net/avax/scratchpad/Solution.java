@@ -31,16 +31,48 @@ class Solution {
     //
     // 136 / 136 test cases passed.
     // Status: Accepted
-    // Runtime: 130 ms
-    // Your runtime beats 0.22 % of java submissions.
+    // Runtime: 11 ms
+    // Your runtime beats 88.36 % of java submissions.
     //
-    // https://leetcode.com/submissions/detail/147733268/
+    // https://leetcode.com/submissions/detail/147744888/
 
     public boolean searchMatrix(int[][] matrix, int target) {
-        return Arrays.stream(matrix).parallel()
-                .map(row -> Arrays.stream(row).parallel().boxed()
-                        .collect(Collectors.toSet()))
-                .flatMap(row -> row.stream())
-                .collect(Collectors.toSet()).contains(target);
+        int m = matrix.length;
+
+        if (m == 0) {
+            return false;
+        }
+
+        int n = matrix[0].length;
+
+        if (n == 0) {
+            return false;
+        }
+
+        long size = m * n;
+
+        return searchSubMatrix(matrix, target, n, 0, size);
+    }
+
+    private static boolean searchSubMatrix(int[][] matrix, int target, int n,
+                                           long startIndex, long endIndex) {
+        long midIndex = (startIndex + endIndex) / 2;
+        int midValue = matrix[(int) (midIndex / n)][(int) (midIndex % n)];
+
+        if (target == midValue) {
+            return true;
+        }
+
+        if (target < midValue) {
+            endIndex = midIndex;
+        } else {
+            startIndex = midIndex + 1;
+        }
+
+        if (startIndex >= endIndex) {
+            return false;
+        }
+
+        return searchSubMatrix(matrix, target, n, startIndex, endIndex);
     }
 }
