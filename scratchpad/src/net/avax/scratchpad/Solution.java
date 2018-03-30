@@ -34,7 +34,7 @@ class Solution {
     // Runtime: 11 ms
     // Your runtime beats 88.36 % of java submissions.
     //
-    // https://leetcode.com/submissions/detail/147744888/
+    // https://leetcode.com/submissions/detail/147748553/
 
     public boolean searchMatrix(int[][] matrix, int target) {
         int m = matrix.length;
@@ -49,30 +49,24 @@ class Solution {
             return false;
         }
 
-        long size = m * n;
+        long i1 = 0;
+        long i2 = m * n;
+        long i;
+        int value;
 
-        return searchSubMatrix(matrix, target, n, 0, size);
-    }
+        while (target != (value
+                = matrix[(int) ((i = (i1 + i2) / 2) / n)][(int) (i % n)])) {
+            if (target < value) {
+                i2 = i;
+            } else {
+                i1 = i + 1;
+            }
 
-    private static boolean searchSubMatrix(int[][] matrix, int target, int n,
-                                           long startIndex, long endIndex) {
-        long midIndex = (startIndex + endIndex) / 2;
-        int midValue = matrix[(int) (midIndex / n)][(int) (midIndex % n)];
-
-        if (target == midValue) {
-            return true;
+            if (i1 >= i2) {
+                return false;
+            }
         }
 
-        if (target < midValue) {
-            endIndex = midIndex;
-        } else {
-            startIndex = midIndex + 1;
-        }
-
-        if (startIndex >= endIndex) {
-            return false;
-        }
-
-        return searchSubMatrix(matrix, target, n, startIndex, endIndex);
+        return true;
     }
 }
