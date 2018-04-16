@@ -6,52 +6,43 @@ package net.avax.codingpractice.expressionaddoperators;
 //
 // 20 / 20 test cases passed.
 // Status: Accepted
-// Runtime: 588 ms
-// Your runtime beats 1.94 % of java submissions.
+// Runtime: 784 ms
+// [No message about beating any other submissions . . . is it the worst?!]
 //
-// https://leetcode.com/submissions/detail/150316068/
+// https://leetcode.com/submissions/detail/150319549/
 
 import java.util.ArrayList;
 import java.util.List;
 
 class Solution {
-    private final int OP_BIT_COUNT = 2;
-    private final int OP_NONE = 0;
-    private final int OP_TIMES = 1;
-    private final int OP_PLUS = 2;
-    private final int OP_MINUS = 3;
-    private final long BEGIN_MASK = (1L << OP_BIT_COUNT) - 1;
-    private final char[] SYMBOL_FOR_OP = new char[]{'_', '*', '+', '-'};
-
     public List<String> addOperators(String num, int target) {
         List<String> matches = new ArrayList<>();
         int length = num.length();
 
         if (length > 0) {
             int opPosCount = length - 1;
-            int opComboBitCount = opPosCount * OP_BIT_COUNT;
+            int opComboBitCount = opPosCount * Op.BIT_COUNT;
             long opComboCount = 1L << opComboBitCount;
-            int maxBitIndex = opComboBitCount - OP_BIT_COUNT;
+            int maxBitIndex = opComboBitCount - Op.BIT_COUNT;
 
             OP_COMBO_LOOP:
             for (long opCombo = 0; opCombo < opComboCount; opCombo++) {
-                long mask = BEGIN_MASK << maxBitIndex;
+                long mask = Op.MASK << maxBitIndex;
                 int bitIndex = maxBitIndex;
                 int beginIndex = 0;
-                int prevOp = OP_NONE;
+                Op prevOp = Op.NONE;
                 long accumulator = 0;
                 long opComboVal = 0;
                 StringBuilder opComboSb = new StringBuilder();
 
-                OP_POS_LOOP:
                 for (int endIndex = 1; endIndex <= length; endIndex++) {
-                    int op = (int) ((opCombo & mask) >> bitIndex);
+                    Op op = Op.values()[(int) ((opCombo & mask) >> bitIndex)];
 
-                    mask >>= OP_BIT_COUNT;
-                    bitIndex -= OP_BIT_COUNT;
+                    mask >>= Op.BIT_COUNT;
+                    bitIndex -= Op.BIT_COUNT;
 
-                    if (op == OP_NONE && endIndex < length) {
-                        continue OP_POS_LOOP;
+                    if (op == Op.NONE && endIndex < length) {
+                        continue;
                     }
 
                     String str = num.substring(beginIndex, endIndex);
@@ -62,17 +53,17 @@ class Solution {
 
                     long val = Long.parseLong(str);
 
-                    if (prevOp == OP_TIMES) {
+                    if (prevOp == Op.TIMES) {
                         accumulator *= val;
                     } else {
                         opComboVal += accumulator;
-                        accumulator = (prevOp == OP_MINUS) ? -val : val;
+                        accumulator = (prevOp == Op.MINUS) ? -val : val;
                     }
 
                     opComboSb.append(str);
 
                     if (endIndex < length) {
-                        opComboSb.append(SYMBOL_FOR_OP[op]);
+                        opComboSb.append(op);
                     } else {
                         opComboVal += accumulator;
                     }
@@ -88,5 +79,25 @@ class Solution {
         }
 
         return matches;
+    }
+
+    private enum Op {
+        NONE(""),
+        TIMES("*"),
+        PLUS("+"),
+        MINUS("-");
+
+        final static int BIT_COUNT = 2;
+        final static long MASK = (1L << Op.BIT_COUNT) - 1;
+
+        final String symbol;
+
+        Op(String symbol) {
+            this.symbol = symbol;
+        }
+
+        public String toString() {
+            return symbol;
+        }
     }
 }
