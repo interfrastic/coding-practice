@@ -15,19 +15,103 @@ package net.avax.codingpractice.expressionaddoperators;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 class Solution {
+    private final int OP_BIT_COUNT = 2;
+    private final int OP_NONE = 0;
+    private final int OP_TIMES = 1;
+    private final int OP_PLUS = 2;
+    private final int OP_MINUS = 3;
+    private final long BEGIN_MASK = (1L << OP_BIT_COUNT) - 1;
+
     public List<String> addOperators(String num, int target) {
-        return getTimesCombos(num).stream().map(c -> c.str).collect
-                (Collectors.toList());
-//        return getTimesMatches(num, BigInteger.valueOf(target));
-//        return getMatches(num, BigInteger.valueOf(target));
+        return getMatches(num, BigInteger.valueOf(target));
     }
 
     public List<String> addOperatorsRefactored(String num, int target) {
-        return getTimesCombosRefactored(num).stream().map(c -> c.str).collect
-                (Collectors.toList());
+        List<String> matches = new ArrayList<>();
+
+        int length = num.length();
+
+        if (length > 0) {
+            BigInteger targetVal = BigInteger.valueOf(target);
+            int opPosCount = length - 1;
+
+            int comboBitCount = opPosCount * OP_BIT_COUNT;
+            long comboCount = 1L << comboBitCount;
+            int maxBitIndex = (opPosCount - 1) * OP_BIT_COUNT;
+
+            COMBO_LOOP:
+            for (long combo = 0; combo < comboCount; combo++) {
+                BigInteger comboVal = BigInteger.ZERO;
+                int prevOp = OP_NONE;
+                BigInteger termVal = BigInteger.ZERO;
+                long mask = BEGIN_MASK << maxBitIndex;
+                int bitIndex = maxBitIndex;
+                int beginIndex = 0;
+                StringBuilder sb = new StringBuilder();
+
+                for (int endIndex = 1; endIndex <= length; endIndex++) {
+                    int op = (int) ((combo & mask) >> bitIndex);
+
+                    if (op != OP_NONE || endIndex == length) {
+                        String str = num.substring(beginIndex, endIndex);
+
+                        if (str.length() > 1 && str.charAt(0) == '0') {
+                            continue COMBO_LOOP;
+                        }
+
+                        sb.append(str);
+
+                        BigInteger val = new BigInteger(str);
+
+                        switch (prevOp) {
+                            case OP_TIMES:
+                                termVal = termVal.multiply(val);
+                                break;
+                            case OP_MINUS:
+                                comboVal = comboVal.add(termVal);
+                                termVal = val.negate();
+                                break;
+                            default:
+                                comboVal = comboVal.add(termVal);
+                                termVal = val;
+                                break;
+                        }
+
+                        if (endIndex < length) {
+                            switch (op) {
+                                case OP_TIMES:
+                                    sb.append('*');
+                                    break;
+                                case OP_PLUS:
+                                    sb.append('+');
+                                    break;
+                                case OP_MINUS:
+                                    sb.append('-');
+                                    break;
+                            }
+                        } else {
+                            comboVal = comboVal.add(termVal);
+                        }
+
+                        beginIndex = endIndex;
+                        prevOp = op;
+                    }
+
+                    mask >>= OP_BIT_COUNT;
+                    bitIndex -= OP_BIT_COUNT;
+                }
+
+                String comboStr = sb.toString();
+
+                if (comboVal.equals(targetVal)) {
+                    matches.add(comboStr);
+                }
+            }
+        }
+
+        return matches;
     }
 
     private List<String> getMatches(String num, BigInteger target) {
