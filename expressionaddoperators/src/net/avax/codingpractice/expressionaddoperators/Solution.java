@@ -15,136 +15,156 @@ package net.avax.codingpractice.expressionaddoperators;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 class Solution {
     public List<String> addOperators(String num, int target) {
+        return getTimesCombos(num).stream().map(c -> c.str).collect
+                (Collectors.toList());
+//        return getTimesMatches(num, BigInteger.valueOf(target));
+//        return getMatches(num, BigInteger.valueOf(target));
+    }
+
+    public List<String> addOperatorsRefactored(String num, int target) {
+        return getTimesCombosRefactored(num).stream().map(c -> c.str).collect
+                (Collectors.toList());
+    }
+
+    private List<String> getMatches(String num, BigInteger target) {
         List<String> matches = new ArrayList<>();
 
-        for (Combo combo : getCombos(num)) {
-            String expression = combo.toString();
-            BigInteger value = new BigInteger(combo.collapse().toString());
+        int length = num.length();
 
-            if (value.equals(BigInteger.valueOf(target))) {
-                matches.add(expression);
+        if (length > 0) {
+            for (int endIndex = 1; endIndex <= length; endIndex++) {
+                String str1 = num.substring(0, endIndex);
+
+                if (endIndex == length) {
+                    matches.addAll(getTimesMatches(str1, target));
+                } else {
+                    String str2 = num.substring(endIndex);
+
+                    for (char operator : new char[]{'+', '-'}) {
+                        for (Combo combo1 : getTimesCombos(str1)) {
+                            BigInteger newTarget = (operator == '+')
+                                    ? target.subtract(combo1.val)
+                                    : combo1.val.subtract(target);
+
+                            for (String match : getMatches(str2, newTarget)) {
+                                matches.add(combo1.str + operator + match);
+                            }
+                        }
+                    }
+                }
             }
         }
 
         return matches;
     }
 
-    private enum Operator {
-        TIMES("*"),
-        PLUS("+"),
-        MINUS("-");
+    private List<String> getTimesMatches(String str, BigInteger target) {
+        List<String> matches = new ArrayList<>();
 
-        private final String name;
-
-        Operator(String name) {
-            this.name = name;
+        for (Combo combo : getTimesCombos(str)) {
+            if (combo.val.equals(target)) {
+                matches.add(combo.str);
+            }
         }
 
-        public String toString() {
-            return name;
-        }
+        return matches;
     }
 
-    private static class Combo {
-        String num;
-        Operator operator;
-        Combo next;
-
-        public Combo(String num) {
-            this.num = num;
-        }
-
-        public Combo collapse() {
-            for (Operator operator : Operator.values()) {
-                Combo combo = this;
-                Combo prevCombo = combo;
-
-                while ((combo = combo.next) != null) {
-                    if (prevCombo.operator == operator) {
-                        BigInteger result = new BigInteger(prevCombo.num);
-                        BigInteger operand = new BigInteger(combo.num);
-
-                        switch (prevCombo.operator) {
-                            case PLUS:
-                                result = result.add(operand);
-                                break;
-                            case MINUS:
-                                result = result.subtract(operand);
-                                break;
-                            case TIMES:
-                                result = result.multiply(operand);
-                                break;
-                        }
-
-                        prevCombo.num = result.toString();
-                        prevCombo.next = combo.next;
-
-                        if (prevCombo.next == null) {
-                            prevCombo.operator = null;
-                        } else {
-                            prevCombo.operator = combo.operator;
-                        }
-
-                        combo = prevCombo;
-                    }
-
-                    prevCombo = combo;
-                }
-            }
-
-            return this;
-        }
-
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            Combo combo = this;
-            Combo prevCombo = combo;
-
-            sb.append(combo.num);
-
-            while ((combo = combo.next) != null) {
-                sb.append(prevCombo.operator);
-                sb.append(combo.num);
-                prevCombo = combo;
-            }
-
-            return sb.toString();
-        }
-    }
-
-    private static List<Combo> getCombos(String num) {
+    private List<Combo> getTimesCombos(String str) {
         List<Combo> combos = new ArrayList<>();
-        int maxSplitIndex = num.length();
 
-        for (int splitIndex = 1; splitIndex <= maxSplitIndex; splitIndex++) {
-            String num1 = num.substring(0, splitIndex);
-            String num2 = num.substring(splitIndex);
+        int length = str.length();
 
-            if (num1.matches("^0+([^0]|0$)")) {
-                continue;
-            }
+        if (length > 0) {
+            int maxEndIndex = (str.charAt(0) == '0') ? 1 : length;
 
-            if (num2.length() == 0) {
-                Combo combo = new Combo(num1);
+            for (int endIndex = 1; endIndex <= maxEndIndex; endIndex++) {
+                String str1 = str.substring(0, endIndex);
+                BigInteger val1 = new BigInteger(str1);
 
-                combos.add(combo);
-            } else {
-                for (Operator operator : Operator.values()) {
-                    for (Combo combo2 : getCombos(num2)) {
-                        Combo combo1 = new Combo(num1);
+                if (endIndex == length) {
+                    combos.add(new Combo(str1, val1));
+                } else {
+                    String str2 = str.substring(endIndex);
 
-                        combo1.operator = operator;
-                        combo1.next = combo2;
+                    for (Combo combo : getTimesCombos(str2)) {
+                        String comboStr = str1 + "*" + combo.str;
+                        BigInteger comboVal = val1.multiply(combo.val);
 
-                        combos.add(combo1);
+                        combos.add(new Combo(comboStr, comboVal));
                     }
                 }
             }
         }
 
         return combos;
+    }
+
+    private List<Combo> getTimesCombosRefactored(String str) {
+        List<Combo> combos = new ArrayList<>();
+
+        int length = str.length();
+
+        if (length > 0) {
+            int placeCount = length - 1;
+            long comboCount = (1L << placeCount);
+
+            COMBO_LOOP:
+            for (long comboIndex = 0; comboIndex < comboCount; comboIndex++) {
+                StringBuilder sb = new StringBuilder();
+                BigInteger comboVal = BigInteger.ONE;
+                int prevOperandIndex = 0;
+                int digitIndex = 0;
+                char digit = str.charAt(digitIndex);
+                boolean isLeadingZeroPresent = digit == '0';
+                sb.append(digit);
+
+                int placeIndex = placeCount;
+
+                while (--placeIndex >= 0) {
+                    digit = str.charAt(++digitIndex);
+
+                    if ((comboIndex / (1L << placeIndex)) % 2 != 0) {
+                        String operandStr = str.substring(
+                                prevOperandIndex, digitIndex);
+                        BigInteger operandVal
+                                = new BigInteger(operandStr);
+
+                        comboVal = comboVal.multiply(operandVal);
+                        sb.append("*");
+                        prevOperandIndex = digitIndex - 1;
+                        isLeadingZeroPresent = digit == '0';
+                    } else if (isLeadingZeroPresent) {
+                        continue COMBO_LOOP;
+                    }
+
+                    sb.append(digit);
+                }
+
+                String comboStr = sb.toString();
+                String remainingStr = str.substring(prevOperandIndex);
+                BigInteger remainingVal = new BigInteger(remainingStr);
+
+                comboVal = comboVal.multiply(remainingVal);
+
+                combos.add(new Combo(comboStr, comboVal));
+            }
+        }
+
+        return combos;
+    }
+
+    private static class Combo {
+        final String str;
+        final BigInteger val;
+
+        Combo(String str, BigInteger val) {
+            this.str = str;
+            this.val = val;
+        }
     }
 }
