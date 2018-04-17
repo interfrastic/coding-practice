@@ -1,8 +1,15 @@
 package net.avax.codingpractice.nqueens;
 
-// 2018-04-16 techlet problem:
+// 2018-04-18 techlet problem:
 //
 // https://leetcode.com/problems/n-queens/description/
+//
+// 8 / 9 test cases passed.
+// Status: Time Limit Exceeded
+// Last executed input:
+// 9
+//
+// https://leetcode.com/submissions/detail/150479215/
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,17 +23,67 @@ class Solution {
 
         List<Integer> integers = new ArrayList<>();
 
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < n; i++) {
             integers.add(i);
         }
 
-        System.out.println(permute(integers));
+        for (List<Integer> permutation : permute(integers)) {
+            if (isSafe(permutation.stream().mapToInt(i -> i).toArray())) {
+                List<String> board = new ArrayList<>();
 
-        List<String> strings = Arrays.asList("foo", "bar", "baz");
+                for (Integer rowCode : permutation) {
+                    StringBuilder sb = new StringBuilder();
 
-        System.out.println(permute(strings));
+                    for (int i = 0; i < n; i++) {
+                        sb.append((i == rowCode) ? 'Q' : '.');
+                    }
+
+                    board.add(sb.toString());
+                }
+
+                boards.add(board);
+            }
+        }
 
         return boards;
+    }
+
+    private boolean isSafe(int[] board) {
+        int n = board.length;
+
+        if (n <= 1) {
+            return true;
+        }
+
+        int m = (n - 1);
+        int o = 1 + 2 * m;
+
+        int[] qcl = new int[o];
+        int[] qcr = new int[o];
+
+        for (int i = 0; i < n; i++) {
+            int r = board[i];
+
+            for (int j = 0; j < o; j++) {
+                int vl = (0 + i) + (j - m);
+
+                if (vl == r) {
+                    if (++qcl[j] >= 2) {
+                        return false;
+                    }
+                }
+
+                int vr = (m - i) + (j - m);
+
+                if (vr == r) {
+                    if (++qcr[j] >= 2) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     private static <T> List<List<T>> permute(List<T> things) {
@@ -38,7 +95,8 @@ class Solution {
         return things.stream().flatMap(
                 firstThing -> permute(
                         things.stream().filter(
-                                remainingThing -> remainingThing != firstThing
+                                remainingThing -> remainingThing !=
+                                        firstThing
                         ).collect(Collectors.toList())
                 ).stream().map(
                         permutation -> Stream.concat(
