@@ -16,9 +16,13 @@ public class Main {
 
         printBoard(boards);
 
-        boards = solution.solveNQueens(9);
-
-        printBoard(boards);
+        long startTime = System.currentTimeMillis();
+        if (false) {
+            solution.solveNQueensGeneric(9);
+        } else {
+            solution.solveNQueens(9);
+        }
+        System.out.println(System.currentTimeMillis() - startTime);
     }
 
     private static void printBoard(List<List<String>> boards) {

@@ -4,12 +4,12 @@ package net.avax.codingpractice.nqueens;
 //
 // https://leetcode.com/problems/n-queens/description/
 //
-// 8 / 9 test cases passed.
-// Status: Time Limit Exceeded
-// Last executed input:
-// 9
+// 9 / 9 test cases passed.
+// Status: Accepted
+// Runtime: 231 ms
+// [No message about beating any other submissions . . . is it the worst?!]
 //
-// https://leetcode.com/submissions/detail/150479215/
+// https://leetcode.com/submissions/detail/150482405/
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,13 +21,43 @@ class Solution {
     public List<List<String>> solveNQueens(int n) {
         List<List<String>> boards = new ArrayList<>();
 
+        int[] integers = new int[n];
+
+        for (int i = 0; i < n; i++) {
+            integers[i] = i;
+        }
+
+        for (int[] permutation : permute(integers)) {
+            if (isSafe(permutation)) {
+                List<String> board = new ArrayList<>();
+
+                for (Integer rowCode : permutation) {
+                    StringBuilder sb = new StringBuilder();
+
+                    for (int i = 0; i < n; i++) {
+                        sb.append((i == rowCode) ? 'Q' : '.');
+                    }
+
+                    board.add(sb.toString());
+                }
+
+                boards.add(board);
+            }
+        }
+
+        return boards;
+    }
+
+    public List<List<String>> solveNQueensGeneric(int n) {
+        List<List<String>> boards = new ArrayList<>();
+
         List<Integer> integers = new ArrayList<>();
 
         for (int i = 0; i < n; i++) {
             integers.add(i);
         }
 
-        for (List<Integer> permutation : permute(integers)) {
+        for (List<Integer> permutation : genericPermute(integers)) {
             if (isSafe(permutation.stream().mapToInt(i -> i).toArray())) {
                 List<String> board = new ArrayList<>();
 
@@ -86,14 +116,54 @@ class Solution {
         return true;
     }
 
-    private static <T> List<List<T>> permute(List<T> things) {
+
+    private static List<int[]> permute(int[] nums) {
+        int n = nums.length;
+        List<int[]> permutations = new ArrayList<>();
+
+        if (n == 1) {
+            permutations.add(new int[]{nums[0]});
+
+            return permutations;
+        }
+
+        for (int i = 0; i < n; i++) {
+            int firstNum = nums[i];
+            int remainingNumCount = n - 1;
+            int[] remainingNums = new int[remainingNumCount];
+
+            for (int j = 0; j < i; j++) {
+                remainingNums[j] = nums[j];
+            }
+
+            for (int j = i + 1; j < n; j++) {
+                remainingNums[j - 1] = nums[j];
+            }
+
+            for (int[] remainingPermuation : permute(remainingNums)) {
+                int[] permutation = new int[n];
+
+                permutation[0] = firstNum;
+
+                for (int j = 0; j < remainingNumCount; j++) {
+                    permutation[1 + j] = remainingPermuation[j];
+                }
+
+                permutations.add(permutation);
+            }
+        }
+
+        return permutations;
+    }
+
+    private static <T> List<List<T>> genericPermute(List<T> things) {
         if (things.size() == 1) {
             return new ArrayList<List<T>>(Arrays.asList(
                     new ArrayList<T>(Arrays.asList(things.get(0)))));
         }
 
         return things.stream().flatMap(
-                firstThing -> permute(
+                firstThing -> genericPermute(
                         things.stream().filter(
                                 remainingThing -> remainingThing !=
                                         firstThing
