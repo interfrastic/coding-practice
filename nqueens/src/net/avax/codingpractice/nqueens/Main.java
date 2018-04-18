@@ -8,13 +8,12 @@ public class Main {
     public static void main(String[] args) {
         Solution solution = new Solution();
 
-        List<List<String>> boards = solution.solveNQueens(4);
-
-        printBoard(boards);
-
-        boards = solution.solveNQueens(6);
-
-        printBoard(boards);
+        for (int n = 0; n <= 8; n++) {
+            List<List<String>> boards = solution.solveNQueens(n);
+            System.out.println("Solution for n = " + n);
+            System.out.println();
+            printBoard(boards);
+        }
 
         long startTime = System.currentTimeMillis();
         if (false) {

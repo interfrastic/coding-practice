@@ -11,9 +11,7 @@ package net.avax.codingpractice.nqueens;
 //
 // https://leetcode.com/submissions/detail/150482405/
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,31 +19,88 @@ class Solution {
     public List<List<String>> solveNQueens(int n) {
         List<List<String>> boards = new ArrayList<>();
 
-        int[] integers = new int[n];
+        TOP_COL_LOOP:
+        for (int topCol = 0; topCol < n; topCol++) {
+            List<Integer> queens = new LinkedList<>();
+            List<Integer> decQueenDiags = new LinkedList<>();
+            List<Integer> incQueenDiags = new LinkedList<>();
 
-        for (int i = 0; i < n; i++) {
-            integers[i] = i;
-        }
+            queens.add(topCol);
+            decQueenDiags.add(topCol);
+            incQueenDiags.add(topCol);
 
-        for (int[] permutation : permute(integers)) {
-            if (isSafe(permutation)) {
-                List<String> board = new ArrayList<>();
+            for (int row = 1; row < n; row++) {
+                decrementAll(decQueenDiags, 0);
+                incrementAll(incQueenDiags, n);
 
-                for (Integer rowCode : permutation) {
-                    StringBuilder sb = new StringBuilder();
+                int col = 0;
 
-                    for (int i = 0; i < n; i++) {
-                        sb.append((i == rowCode) ? 'Q' : '.');
+                while (queens.contains(col)
+                        || decQueenDiags.contains(col)
+                        || incQueenDiags.contains(col)) {
+                    if (++col == n) {
+                        continue TOP_COL_LOOP;
                     }
-
-                    board.add(sb.toString());
                 }
 
-                boards.add(board);
+                queens.add(col);
+                decQueenDiags.add(col);
+                incQueenDiags.add(col);
+            }
+
+            if (queens.size() == n) {
+                boards.add(getBoard(queens));
             }
         }
 
         return boards;
+    }
+
+    private static void decrementAll(List<Integer> integers, int limit) {
+        ListIterator<Integer> iterator = integers.listIterator();
+
+        while (iterator.hasNext()) {
+            int val = iterator.next();
+
+            if (val > limit) {
+                val--;
+                iterator.set(val);
+            } else {
+                iterator.remove();
+            }
+        }
+    }
+
+    private static void incrementAll(List<Integer> integers, int limit) {
+        ListIterator<Integer> iterator = integers.listIterator();
+
+        while (iterator.hasNext()) {
+            int val = iterator.next();
+
+            if (val < limit) {
+                val++;
+                iterator.set(val);
+            } else {
+                iterator.remove();
+            }
+        }
+    }
+
+
+    private static List<String> getBoard(List<Integer> permutation) {
+        List<String> board = new ArrayList<>();
+
+        for (Integer rowCode : permutation) {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < permutation.size(); i++) {
+                sb.append((i == rowCode) ? 'Q' : '.');
+            }
+
+            board.add(sb.toString());
+        }
+
+        return board;
     }
 
     public List<List<String>> solveNQueensGeneric(int n) {
