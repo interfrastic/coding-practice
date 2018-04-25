@@ -18,32 +18,32 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-        ByteArrayOutputStream byteArrayOutputStream = new
-                ByteArrayOutputStream(12);
+        var byteArrayOutputStream = new ByteArrayOutputStream(12);
 
         while (byteArrayOutputStream.size() <= 10) {
             byteArrayOutputStream.write("hello".getBytes());
         }
 
-        byte[] bytes = byteArrayOutputStream.toByteArray();
+        var bytes = byteArrayOutputStream.toByteArray();
 
         System.out.println("Displaying byte array created from stream:");
 
-        for (int i = 0; i < bytes.length; i++) {
-            System.out.print((char) bytes[i] + " ");
+        for (var i = 0; i < bytes.length; i++) {
+            System.out.print((char) bytes[i] + "  ");
         }
         System.out.println();
 
         int nextByte;
-        ByteArrayInputStream byteArrayInputStream
-                = new ByteArrayInputStream(bytes);
+        var byteArrayInputStream = new ByteArrayInputStream(bytes);
 
         System.out.println("Reading and transforming stream of byte array:");
 
-        for (int i = 0; i < 3; i++) {
+        for (var i = 0; i < 3; i++) {
             while ((nextByte = byteArrayInputStream.read()) >= 0) {
-                System.out.print(Character.toUpperCase((char) (nextByte + i))
-                        + " ");
+                var transformedByte = nextByte + i;
+
+                System.out.print((char) transformedByte + " (" +
+                        transformedByte + ")  ");
             }
             System.out.println();
 
