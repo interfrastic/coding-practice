@@ -1,53 +1,28 @@
 package net.avax.scratchpad;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
-// Keynotes: Oracle Code Chicago: Alex Buckley: Local-Variable Type Inference
-//
-// https://www.youtube.com/watch?v=84mCmmzksGI&t=1h15m55s
-//
-// JEP 286: Local-Variable Type Inference
-//
-// http://openjdk.java.net/jeps/286
-//
-// Style Guidelines for Local Variable Type Inference in Java
-//
-// http://openjdk.java.net/projects/amber/LVTIstyle.html
+import java.util.Arrays;
 
 public class Main {
-    public static void main(String[] args) throws IOException {
-        var byteArrayOutputStream = new ByteArrayOutputStream(12);
+    public static void main(String[] args) {
+        Solution solution = new Solution();
 
-        while (byteArrayOutputStream.size() <= 10) {
-            byteArrayOutputStream.write("hello".getBytes());
-        }
+        System.out.println(solution.canPlaceFlowers(new int[]{1, 0, 0, 0, 1},
+                1));
+        System.out.println(solution.canPlaceFlowers(new int[]{1, 0, 0, 0, 1},
+                2));
 
-        var bytes = byteArrayOutputStream.toByteArray();
+        System.out.println(solution.findDuplicate(new String[]{
+                "root/a 1.txt(abcd) 2.txt(efgh)", "root/c 3.txt(abcd)",
+                "root/c/d 4.txt(efgh)", "root 4.txt(efgh)"}));
 
-        System.out.println("Displaying byte array created from stream:");
+        int[] array = new int[]{1, 2, 3, 4, 5, 6, 7};
 
-        for (var i = 0; i < bytes.length; i++) {
-            System.out.print((char) bytes[i] + "  ");
-        }
-        System.out.println();
+        solution.rotate(array, 3);
+        System.out.println(Arrays.toString(array));
 
-        int nextByte;
-        var byteArrayInputStream = new ByteArrayInputStream(bytes);
+        array = new int[]{-1, -100, 3, 99};
 
-        System.out.println("Reading and transforming stream of byte array:");
-
-        for (var i = 0; i < 3; i++) {
-            while ((nextByte = byteArrayInputStream.read()) >= 0) {
-                var transformedByte = nextByte + i;
-
-                System.out.print((char) transformedByte + " (" +
-                        transformedByte + ")  ");
-            }
-            System.out.println();
-
-            byteArrayInputStream.reset();
-        }
+        solution.rotate(array, 2);
+        System.out.println(Arrays.toString(array));
     }
 }
