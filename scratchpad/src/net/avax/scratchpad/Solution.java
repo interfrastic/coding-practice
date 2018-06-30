@@ -1,9 +1,9 @@
 package net.avax.scratchpad;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import static java.lang.Integer.MAX_VALUE;
+import static java.lang.Integer.min;
 
 class Solution {
 
@@ -13,7 +13,41 @@ class Solution {
     // /description/
 
     public int[] shortestToChar(String S, char C) {
-        return null;
+        int length = S.length();
+
+        int[] targets = new int[length];
+        int[] results = new int[length];
+
+        int targetIndex = 0;
+        int target = -1;
+
+        while ((target = S.indexOf(C, target)) >= 0) {
+            targets[targetIndex++] = target;
+            target++;
+        }
+
+        int targetsLength = targetIndex;
+
+        targetIndex = 0;
+
+        int nextTarget = targets[targetIndex++];
+        int prevTarget = -10000;
+
+        for (int index = 0; index < S.length(); index++) {
+            if (index > nextTarget) {
+                prevTarget = nextTarget;
+
+                if (targetIndex < targetsLength) {
+                    nextTarget = targets[targetIndex++];
+                } else {
+                    nextTarget = 10000;
+                }
+            }
+
+            results[index] = min(index - prevTarget, nextTarget - index);
+        }
+
+        return results;
     }
 
     // 2018-05-16 techlet medium problem:
