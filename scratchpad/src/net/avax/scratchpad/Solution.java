@@ -7,62 +7,24 @@ import static java.lang.Integer.min;
 
 class Solution {
 
-    // 2018-05-16 techlet easy problem:
+    // 2018-08-15 techlet easy problem:
     //
-    // https://leetcode.com/problems/shortest-distance-to-a-character
-    // /description/
+    // https://leetcode.com/problems/palindrome-number/description/
 
-    public int[] shortestToChar(String S, char C) {
-        int length = S.length();
+    private boolean isPalindrome(String s) {
+        int i = 0;
+        int j = s.length();
 
-        int[] targets = new int[length];
-        int[] results = new int[length];
-
-        int targetIndex = 0;
-        int target = -1;
-
-        while ((target = S.indexOf(C, target)) >= 0) {
-            targets[targetIndex++] = target;
-            target++;
-        }
-
-        int targetsLength = targetIndex;
-
-        targetIndex = 0;
-
-        int nextTarget = targets[targetIndex++];
-        int prevTarget = -10000;
-
-        for (int index = 0; index < S.length(); index++) {
-            if (index > nextTarget) {
-                prevTarget = nextTarget;
-
-                if (targetIndex < targetsLength) {
-                    nextTarget = targets[targetIndex++];
-                } else {
-                    nextTarget = 10000;
-                }
+        while (i < --j) {
+            if (s.charAt(i++) != s.charAt(j)) {
+                return false;
             }
-
-            results[index] = min(index - prevTarget, nextTarget - index);
         }
 
-        return results;
+        return true;
     }
 
-    // 2018-05-16 techlet medium problem:
-    //
-    // https://leetcode.com/problems/binary-tree-inorder-traversal/description/
-
-    public List<Integer> inorderTraversal(TreeNode root) {
-        return null;
-    }
-
-    // 2018-05-16 techlet hard problem:
-    //
-    // https://leetcode.com/problems/minimum-window-substring/description/
-
-    public String minWindow(String s, String t) {
-        return null;
+    public boolean isPalindrome(int x) {
+        return isPalindrome(new Integer(x).toString());
     }
 }
