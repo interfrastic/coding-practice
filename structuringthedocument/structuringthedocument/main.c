@@ -33,100 +33,90 @@ struct document {
 };
 
 #define MAX_CHAR_COUNT 1000
-
-/*
- * The one added to the maximum word count takes into account the fact that we
- * initialize the structure that points to the next word when we parse the
- * period that teminates a sentence, despite the fact that there might not be
- * another word.
- */
-
-#define MAX_WORD_COUNT ((MAX_CHAR_COUNT / 2) + 1)
-
-/*
- * Because each sentence could be one word, the maximum sentence count is the
- * same as the maximum word count; as with the maximum word count, we have added
- * one to take into account the fact that we initialize the structure that
- * points to the next sentence when we parse the period that teminates a
- * sentence, despite the fact that there might not be another sentence.
- */
-
+#define MAX_WORD_COUNT (MAX_CHAR_COUNT / 2)
 #define MAX_SENTENCE_COUNT MAX_WORD_COUNT
 #define MAX_PARAGRAPH_COUNT 5
 
 struct document get_document(char* text) {
-    char* p_data = malloc(MAX_CHAR_COUNT * sizeof (char));
-    struct word* p_word = malloc(MAX_WORD_COUNT * sizeof (struct word));
-    struct sentence* p_sentence = malloc(MAX_SENTENCE_COUNT
-                                         * sizeof (struct sentence));
-    struct paragraph* p_paragraph = malloc(MAX_PARAGRAPH_COUNT
-                                           * sizeof (struct paragraph));
-    struct document document;
-    
-    char c;
-    char* p_letter = p_data;
+    char character;
+    struct word* p_this_word = NULL;
+    struct word* p_next_word = malloc(MAX_WORD_COUNT * sizeof (struct word));
+    struct sentence* p_this_sentence = NULL;
+    struct sentence* p_next_sentence = malloc(MAX_SENTENCE_COUNT
+                                              * sizeof (struct sentence));
+    struct paragraph* p_this_paragraph = NULL;
+    struct paragraph* p_next_paragraph = malloc(MAX_PARAGRAPH_COUNT
+                                                * sizeof (struct paragraph));
+    struct document document = { .data = NULL, .paragraph_count = 0 };
 
-    p_word->data = p_letter;
-    
-    p_sentence->data = p_word;
-    p_sentence->word_count = 0;
-    
-    p_paragraph->data = p_sentence;
-    p_paragraph->sentence_count = 0;
-    
-    document.data = p_paragraph;
-    document.paragraph_count = 0;
-    
-    while ((c = *text++) != 0) {
-        switch (c) {
+    do {
+        character = *text;
+
+        switch (character) {
             case ' ':
-                *p_letter++ = 0;
-                p_sentence->word_count++;
-                
-                (++p_word)->data = p_letter;
+                *text = 0;
+                p_this_word = NULL;
+                p_this_sentence->word_count++;
 
                 break;
             case '.':
-                *p_letter++ = 0;
-                p_sentence->word_count++;
-                
-                (++p_word)->data = p_letter;
+                *text = 0;
+                p_this_word = NULL;
+                p_this_sentence->word_count++;
 
-                p_paragraph->sentence_count++;
-                
-                (++p_sentence)->data = p_word;
-                p_sentence->word_count = 0;
-                
+                p_this_sentence = NULL;
+                p_this_paragraph->sentence_count++;
+
                 break;
             case '\n':
+            case '\0':
+                p_this_paragraph = NULL;
                 document.paragraph_count++;
-                
-                (++p_paragraph)->data = p_sentence;
-                p_paragraph->sentence_count = 0;
 
                 break;
             default:
-                *p_letter++ = c;
+                if (p_this_word == NULL) {
+                    p_this_word = p_next_word++;
+                    p_this_word->data = text;
+
+                    if (p_this_sentence == NULL) {
+                        p_this_sentence = p_next_sentence++;
+                        p_this_sentence->data = p_this_word;
+                        p_this_sentence->word_count = 0;
+
+                        if (p_this_paragraph == NULL) {
+                            p_this_paragraph = p_next_paragraph++;
+                            p_this_paragraph->data = p_this_sentence;
+                            p_this_paragraph->sentence_count = 0;
+
+                            if (document.data == NULL) {
+                                document.data = p_this_paragraph;
+                            }
+                        }
+                    }
+                }
 
                 break;
         }
-    }
-    
-    document.paragraph_count++;
+
+        text++;
+    } while (character != '\0');
 
     return document;
 }
 
-struct word kth_word_in_mth_sentence_of_nth_paragraph(struct document Doc, int k, int m, int n) {
-    return *(((Doc.data + n - 1)->data + m - 1)->data + k - 1);
+struct word kth_word_in_mth_sentence_of_nth_paragraph(struct document Doc,
+                                                      int k, int m, int n) {
+    return Doc.data[n - 1].data[m - 1].data[k - 1];
 }
 
-struct sentence kth_sentence_in_mth_paragraph(struct document Doc, int k, int m) {
-    return *((Doc.data + m - 1)->data + k - 1);
+struct sentence kth_sentence_in_mth_paragraph(struct document Doc,
+                                              int k, int m) {
+    return Doc.data[m - 1].data[k - 1];
 }
 
 struct paragraph kth_paragraph(struct document Doc, int k) {
-    return *(Doc.data + k - 1);
+    return Doc.data[k - 1];
 }
 
 
@@ -161,7 +151,7 @@ void print_document(struct document doc) {
 char* get_input_text() {
     int paragraph_count;
     scanf("%d", &paragraph_count);
-    
+
     char p[MAX_PARAGRAPHS][MAX_CHARACTERS], doc[MAX_CHARACTERS];
     memset(doc, 0, sizeof(doc));
     getchar();
@@ -171,7 +161,7 @@ char* get_input_text() {
         if (i != paragraph_count - 1)
             strcat(doc, "\n");
     }
-    
+
     char* returnDoc = (char*)malloc((strlen (doc)+1) * (sizeof(char)));
     strcpy(returnDoc, doc);
     return returnDoc;
@@ -181,28 +171,28 @@ int main()
 {
     char* text = get_input_text();
     struct document Doc = get_document(text);
-    
+
     int q;
     scanf("%d", &q);
-    
+
     while (q--) {
         int type;
         scanf("%d", &type);
-        
+
         if (type == 3){
             int k, m, n;
             scanf("%d %d %d", &k, &m, &n);
             struct word w = kth_word_in_mth_sentence_of_nth_paragraph(Doc, k, m, n);
             print_word(w);
         }
-        
+
         else if (type == 2) {
             int k, m;
             scanf("%d %d", &k, &m);
             struct sentence sen= kth_sentence_in_mth_paragraph(Doc, k, m);
             print_sentence(sen);
         }
-        
+
         else{
             int k;
             scanf("%d", &k);
