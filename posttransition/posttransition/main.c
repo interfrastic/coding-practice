@@ -83,12 +83,10 @@ void delete_package(post_office * p_office, package * p_package) {
     package * p_package_limit = packages + new_package_count;
     const package * p_next_remaining_package
         = p_package + old_package_count - new_package_count;
-    char * const p_id = p_package->id;
 
     while (p_package < p_package_limit) {
         *(p_package++) = *(p_next_remaining_package++);
     }
-    free(p_id);
     p_office->packages_count = new_package_count;
 }
 
