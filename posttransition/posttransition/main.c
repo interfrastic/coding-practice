@@ -59,31 +59,21 @@ void print_all_packages(town town) {
 
 void packageAppend(post_office * pOffice, const package * pPackage) {
     const int oldPackageCount = pOffice->packages_count;
-    package * const oldPackages = pOffice->packages;
-    const package * pOldPackage = &oldPackages[0];
-    const package * const pOldPackageLimit = pOldPackage + oldPackageCount;
-
     const int newPackageCount = oldPackageCount + 1;
-    package * const newPackages = malloc(sizeof(package) * newPackageCount);
-    package * pNewPackage = &newPackages[0];
 
-    while (pOldPackage < pOldPackageLimit) {
-        *(pNewPackage++) = *(pOldPackage++);
-    }
+    pOffice->packages
+        = realloc(pOffice->packages, sizeof(package) * newPackageCount);
 
-    *pNewPackage = *pPackage;
+    pOffice->packages[oldPackageCount] = *pPackage;
 
-    pOffice->packages = newPackages;
     pOffice->packages_count = newPackageCount;
-
-    free(oldPackages);
 }
 
 void packageDelete(post_office * pOffice, package * pPackage) {
     const int oldPackageCount = pOffice->packages_count;
-    package * const oldPackages = pOffice->packages;
-
     const int newPackageCount = oldPackageCount - 1;
+
+    package * const oldPackages = pOffice->packages;
     const package * pNextRemainingPackage
         = pPackage + oldPackageCount - newPackageCount;
     package * const pPackageLimit = &oldPackages[newPackageCount];
