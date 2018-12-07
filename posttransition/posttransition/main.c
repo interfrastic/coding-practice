@@ -45,49 +45,54 @@ typedef struct town town;
 void print_all_packages(town town) {
     printf("%s:\n", town.name);
 
-    const int office_count = town.offices_count;
+    for (int officeIndex = 0; officeIndex < town.offices_count; officeIndex++) {
+        printf("\t%d:\n", officeIndex);
 
-    for (int office_index = 0; office_index < office_count; office_index++) {
-        printf("\t%d:\n", office_index);
-
-        const post_office * const p_office = town.offices + office_index;
-        const package * const packages = p_office->packages;
-        const package * const p_package_limit
-            = packages + p_office->packages_count;
-
-        for (const package * p_package = packages; p_package < p_package_limit;
-             p_package++) {
-            printf("\t\t%s\n", p_package->id);
+        for (int packageIndex = 0;
+             packageIndex < town.offices[officeIndex].packages_count;
+             packageIndex++) {
+            printf("\t\t%s\n",
+                   town.offices[officeIndex].packages[packageIndex].id);
         }
     }
 }
 
-void append_package(post_office * p_office, const package * p_package) {
-    const int old_package_count = p_office->packages_count;
-    package * const old_packages = p_office->packages;
-    const int new_package_count = old_package_count + 1;
-    package * const new_packages = malloc(sizeof(package) * new_package_count);
+void packageAppend(post_office * pOffice, const package * pPackage) {
+    const int oldPackageCount = pOffice->packages_count;
+    package * const oldPackages = pOffice->packages;
+    const package * pOldPackage = &oldPackages[0];
+    const package * const pOldPackageLimit = pOldPackage + oldPackageCount;
 
-    memcpy(new_packages, old_packages, sizeof(package) * old_package_count);
-    p_office->packages = new_packages;
-    free(old_packages);
-    memcpy(new_packages + old_package_count, p_package,
-           sizeof(package) * (new_package_count - old_package_count));
-    p_office->packages_count = new_package_count;
+    const int newPackageCount = oldPackageCount + 1;
+    package * const newPackages = malloc(sizeof(package) * newPackageCount);
+    package * pNewPackage = &newPackages[0];
+
+    while (pOldPackage < pOldPackageLimit) {
+        *(pNewPackage++) = *(pOldPackage++);
+    }
+
+    *pNewPackage = *pPackage;
+
+    pOffice->packages = newPackages;
+    pOffice->packages_count = newPackageCount;
+
+    free(oldPackages);
 }
 
-void delete_package(post_office * p_office, package * p_package) {
-    package * packages = p_office->packages;
-    const int old_package_count = p_office->packages_count;
-    const int new_package_count = old_package_count - 1;
-    package * p_package_limit = packages + new_package_count;
-    const package * p_next_remaining_package
-        = p_package + old_package_count - new_package_count;
+void packageDelete(post_office * pOffice, package * pPackage) {
+    const int oldPackageCount = pOffice->packages_count;
+    package * const oldPackages = pOffice->packages;
 
-    while (p_package < p_package_limit) {
-        *(p_package++) = *(p_next_remaining_package++);
+    const int newPackageCount = oldPackageCount - 1;
+    const package * pNextRemainingPackage
+        = pPackage + oldPackageCount - newPackageCount;
+    package * const pPackageLimit = &oldPackages[newPackageCount];
+
+    while (pPackage < pPackageLimit) {
+        *(pPackage++) = *(pNextRemainingPackage++);
     }
-    p_office->packages_count = new_package_count;
+
+    pOffice->packages_count = newPackageCount;
 }
 
 // Sometimes two post offices, even in different towns, may organize the
@@ -98,64 +103,50 @@ void delete_package(post_office * p_office, package * p_package) {
 // stored before they were sent. The accepted packages move to the tail of the
 // second office's queue in the same order they were stored in the first office.
 
-void send_all_acceptable_packages(town * p_source_town, int source_office_index,
-                                  town * p_target_town, int target_office_index) {
-    post_office * p_source_office
-        = p_source_town->offices + source_office_index;
-    package * source_packages = p_source_office->packages;
+void send_all_acceptable_packages(town * pSrcTown, int srcOfficeIndex,
+                                  town * pDstTown, int dstOfficeIndex) {
+    post_office * const pSrcOffice = &pSrcTown->offices[srcOfficeIndex];
+    post_office * const pDstOffice = &pDstTown->offices[dstOfficeIndex];
+    int srcPackageIndex = 0;
 
-    post_office * p_target_office
-        = p_target_town->offices + target_office_index;
-    int target_office_min_weight = p_target_office->min_weight;
-    int target_office_max_weight = p_target_office->max_weight;
-    int source_package_index = 0;
+    while (srcPackageIndex < pSrcOffice->packages_count) {
+        package * const pSrcPackage = &pSrcOffice->packages[srcPackageIndex];
 
-    while (source_package_index < p_source_office->packages_count) {
-        package * const p_source_package
-            = &source_packages[source_package_index];
-        int source_package_weight = p_source_package->weight;
-
-        if (source_package_weight >= target_office_min_weight
-            && source_package_weight <= target_office_max_weight) {
-            append_package(p_target_office, p_source_package);
-            delete_package(p_source_office, p_source_package);
+        if (pSrcPackage->weight >= pDstOffice->min_weight
+            && pSrcPackage->weight <= pDstOffice->max_weight) {
+            packageAppend(pDstOffice, pSrcPackage);
+            packageDelete(pSrcOffice, pSrcPackage);
         } else {
-            source_package_index++;
+            srcPackageIndex++;
         }
     }
 }
 
-town town_with_most_packages(town * towns, int town_count) {
-    int max_town_package_count = 0;
-    town * p_town_with_max_town_package_count = towns;
-    town * p_town_limit = towns + town_count;
+town town_with_most_packages(town * towns, int townCount) {
+    int maxCount = 0;
+    int maxCountTownIndex = 0;
 
-    for (town * p_town = towns; p_town < p_town_limit; p_town++) {
-        int town_package_count = 0;
-        post_office * offices = p_town->offices;
-        int office_count = p_town->offices_count;
-        post_office * p_office_limit = offices + office_count;
+    for (int townIndex = 0; townIndex < townCount; townIndex++) {
+        int count = 0;
 
-        for (post_office * p_office = offices; p_office < p_office_limit;
-             p_office++) {
-            town_package_count += p_office->packages_count;
+        for (int officeIndex = 0; officeIndex < towns[townIndex].offices_count;
+             officeIndex++) {
+            count += towns[townIndex].offices[officeIndex].packages_count;
         }
 
-        if (town_package_count > max_town_package_count) {
-            max_town_package_count = town_package_count;
-            p_town_with_max_town_package_count = p_town;
+        if (count > maxCount) {
+            maxCount = count;
+            maxCountTownIndex = townIndex;
         }
     }
 
-    return *p_town_with_max_town_package_count;
+    return towns[maxCountTownIndex];
 }
 
-town * find_town(town * towns, int town_count, char * name) {
-    town * p_town_limit = towns + town_count;
-
-    for (town * p_town = towns; p_town < p_town_limit; p_town++) {
-        if (strcmp(name, p_town->name) == 0) {
-            return p_town;
+town * find_town(town * towns, int townCount, char * name) {
+    for (int townIndex = 0; townIndex < townCount; townIndex++) {
+        if (strcmp(name, towns[townIndex].name) == 0) {
+            return &towns[townIndex];
         }
     }
 
