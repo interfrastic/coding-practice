@@ -15,8 +15,11 @@
 
 /******************************************************************************/
 
-#define MAX_WORDS (MAX_CHARACTERS / 2)  /* Each word could be one character. */
-#define MAX_SENTENCES MAX_WORDS         /* Each sentence could be one word. */
+#define MAX_CHARACTER_COUNT 1000                    /* Given in problem. */
+#define MAX_PARAGRAPH_COUNT 5                       /* Given in problem. */
+#define MAX_TEXT_SIZE (MAX_CHARACTER_COUNT + 1)     /* NUL-terminated text. */
+#define MAX_WORD_COUNT (MAX_CHARACTER_COUNT / 2)    /* One-character words. */
+#define MAX_SENTENCE_COUNT MAX_WORD_COUNT           /* One-word sentences. */
 
 void * mallocOrDie(size_t size) {
     void * const p = malloc(size);
@@ -44,41 +47,48 @@ char *** kth_paragraph(char **** document, int k) {
 }
 
 char **** get_document(char * pText) {
-    int n, m, k, i; // Paragraph, sentence, word, and character indices.
+    int n, m, k; // Paragraph, sentence, and word indices.
     char **** document = mallocOrDie(sizeof(char ***) * MAX_PARAGRAPHS);
+    char * pBuf = mallocOrDie(MAX_TEXT_SIZE);
 
-    for (n = 0; n < MAX_PARAGRAPHS; n++) {
-        document[n] = mallocOrDie(sizeof(char **) * MAX_SENTENCES);
-        for (m = 0; m < MAX_SENTENCES; m++) {
-            document[n][m] = mallocOrDie(sizeof(char *) * MAX_WORDS);
-            for (k = 0; k < MAX_WORDS; k++) {
-                document[n][m][k] = mallocOrDie(sizeof(char) * MAX_CHARACTERS);
-            }
+    for (n = 0; n < MAX_PARAGRAPH_COUNT; n++) {
+        document[n] = mallocOrDie(sizeof(char **) * MAX_SENTENCE_COUNT);
+        for (m = 0; m < MAX_SENTENCE_COUNT; m++) {
+            document[n][m] = mallocOrDie(sizeof(char *) * MAX_WORD_COUNT);
         }
     }
 
-    n = m = k = i = 0;  /* First paragraph, sentence, word, and character. */
+    n = m = k = 0;  /* First paragraph, sentence, and word. */
+    char * pWord = NULL;
     char c;
 
     do {
         switch (c = *(pText++)) {
-            case '\n':  /* End of paragraph. */
-                document[n++][m][k][i] = '\0';  /* NUL terminates old word. */
-                m = k = i = 0;  /* Start new paragraph, sentence, and word. */
+            case '\n':  /* End of this paragraph. */
+                *(pBuf++) = '\0';   /* Terminate this word with NUL. */
+                document[n++][m][k] = pWord;    /* Add this word. */
+                pWord = NULL;  /* Start new word. */
+                k = m = 0;  /* First word and sentence in new paragraph. */
                 break;
-            case '.':   /* End of sentence. */
-                document[n][m++][k][i] = '\0';  /* NUL terminates old word. */
-                k = i = 0;  /* Start new sentence and word. */
+            case '.':   /* End of this sentence. */
+                *(pBuf++) = '\0';   /* Terminate this word with NUL. */
+                document[n][m++][k] = pWord;    /* Add this word. */
+                pWord = NULL;  /* Start new word. */
+                k = 0;  /* First word in new sentence. */
                 break;
-            case ' ':   /* End of word. */
-                document[n][m][k++][i] = '\0';  /* NUL terminates old word. */
-                i = 0;  /* Start new word. */
+            case ' ':   /* End of this word. */
+                *(pBuf++) = '\0';   /* Terminate this word with NUL. */
+                document[n][m][k++] = pWord;    /* Add this word. */
+                pWord = NULL;  /* Start new word. */
                 break;
-            default:    /* Add character to word. */
-                document[n][m][k][i++] = c; /* Will be NUL at end of text. */
+            default:    /* Add character to this word. */
+                if (!pWord) {
+                    pWord = pBuf;   /* Remember where this new word started. */
+                }
+                *(pBuf++) = c;  /* Will be NUL at end of text. */
                 break;
         }
-    } while (c);    /* NUL terminates the text. */
+    } while (c);    /* NUL terminates the enitre text. */
 
     return document;
 }
