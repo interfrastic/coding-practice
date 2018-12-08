@@ -13,22 +13,77 @@
 #define MAX_CHARACTERS 1005
 #define MAX_PARAGRAPHS 5
 
-char* kth_word_in_mth_sentence_of_nth_paragraph(char**** document, int k, int m, int n) {
-    return NULL;
+/******************************************************************************/
+
+#define MAX_WORDS (MAX_CHARACTERS / 2)  /* Each word could be one character. */
+#define MAX_SENTENCES MAX_WORDS         /* Each sentence could be one word. */
+
+void * mallocOrDie(size_t size) {
+    void * const p = malloc(size);
+
+    if (!p) {
+        fprintf(stderr, "Out of memory\n");
+
+        exit(1);
+    }
+
+    return p;
 }
 
-char** kth_sentence_in_mth_paragraph(char**** document, int k, int m) {
-    return NULL;
+char * kth_word_in_mth_sentence_of_nth_paragraph(char **** document, int k,
+                                                 int m, int n) {
+    return document[n - 1][m - 1][k - 1];
 }
 
-char*** kth_paragraph(char**** document, int k) {
-    return NULL;
+char ** kth_sentence_in_mth_paragraph(char **** document, int k, int m) {
+    return document[m - 1][k - 1];
 }
 
-char**** get_document(char* text) {
-    return NULL;
+char *** kth_paragraph(char **** document, int k) {
+    return document[k - 1];
 }
 
+char **** get_document(char * pText) {
+    int n, m, k, i; // Paragraph, sentence, word, and character indices.
+    char **** document = mallocOrDie(sizeof(char ***) * MAX_PARAGRAPHS);
+
+    for (n = 0; n < MAX_PARAGRAPHS; n++) {
+        document[n] = mallocOrDie(sizeof(char **) * MAX_SENTENCES);
+        for (m = 0; m < MAX_SENTENCES; m++) {
+            document[n][m] = mallocOrDie(sizeof(char *) * MAX_WORDS);
+            for (k = 0; k < MAX_WORDS; k++) {
+                document[n][m][k] = mallocOrDie(sizeof(char) * MAX_CHARACTERS);
+            }
+        }
+    }
+
+    n = m = k = i = 0;  /* First paragraph, sentence, word, and character. */
+    char c;
+
+    do {
+        switch (c = *(pText++)) {
+            case '\n':  /* End of paragraph. */
+                document[n++][m][k][i] = '\0';  /* NUL terminates old word. */
+                m = k = i = 0;  /* Start new paragraph, sentence, and word. */
+                break;
+            case '.':   /* End of sentence. */
+                document[n][m++][k][i] = '\0';  /* NUL terminates old word. */
+                k = i = 0;  /* Start new sentence and word. */
+                break;
+            case ' ':   /* End of word. */
+                document[n][m][k++][i] = '\0';  /* NUL terminates old word. */
+                i = 0;  /* Start new word. */
+                break;
+            default:    /* Add character to word. */
+                document[n][m][k][i++] = c; /* Will be NUL at end of text. */
+                break;
+        }
+    } while (c);    /* NUL terminates the text. */
+
+    return document;
+}
+
+/******************************************************************************/
 
 char* get_input_text() {
     int paragraph_count;
