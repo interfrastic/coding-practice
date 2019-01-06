@@ -10,10 +10,11 @@ public class Main {
     public static void main(String[] args) {
         // 14 s with original brute-force implementation.
         // 70 s with first backtracking implementation.
-        String sentence = "aaaaaaaaaaaaaaaaaaaaaaaa";
-        List<String> dictWords = Stream.of("a","aa","aaa","aaaa","aaaaa","aaaaaa","aaaaaaa","aaaaaaaa","aaaaaaaaa","aaaaaaaaaa").collect(Collectors.toList());
-//        String sentence = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        // 10 s with simple memoization cache.
+//        String sentence = "aaaaaaaaaaaaaaaaaaaaaaaa";
 //        List<String> dictWords = Stream.of("a","aa","aaa","aaaa","aaaaa","aaaaaa","aaaaaaa","aaaaaaaa","aaaaaaaaa","aaaaaaaaaa").collect(Collectors.toList());
+        String sentence = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        List<String> dictWords = Stream.of("a","aa","aaa","aaaa","aaaaa","aaaaaa","aaaaaaa","aaaaaaaa","aaaaaaaaa","aaaaaaaaaa").collect(Collectors.toList());
 //        String sentence = "foobar";
 //        List<String> dictWords = Stream.of("foo","bar","foobar").collect(Collectors.toList());
 //        String sentence = "a";
