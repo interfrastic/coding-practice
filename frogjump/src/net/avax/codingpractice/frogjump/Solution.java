@@ -27,19 +27,27 @@ import java.util.Set;
 // Runtime: 118 ms, faster than 27.29% of Java online submissions for Frog Jump.
 //
 // https://leetcode.com/submissions/detail/200150064/
+//
+// Third attempt with optimized memoization cache:
+//
+// 39 / 39 test cases passed.
+// Status: Accepted
+// Runtime: 244 ms, faster than 8.49% of Java online submissions for Frog Jump.
+//
+// [It seems that this "optimization" had the opposite effect!]
+//
+// https://leetcode.com/submissions/detail/200155246/
 
 class Solution {
     int finalPosition;
     Set<Integer> stones = new HashSet<>();
-    Map<Integer, Map<Integer, Boolean>> startCache = new HashMap<>();
+    Map<Long, Boolean> cache = new HashMap<>();
 
     private boolean canCrossFrom(int start, int prevJump) {
-        if (startCache.containsKey(start)) {
-            Map<Integer, Boolean> prevJumpCache = startCache.get(start);
+        final long key = ((long) start << Integer.SIZE) | prevJump;
 
-            if (prevJumpCache.containsKey(prevJump)) {
-                return prevJumpCache.get(prevJump);
-            }
+        if (cache.containsKey(key)) {
+            return cache.get(key);
         }
 
         int shorterJump = prevJump - 1;
@@ -77,10 +85,7 @@ class Solution {
             }
         }
 
-        Map<Integer, Boolean> prevJumpCache
-                = startCache.computeIfAbsent(start, k -> new HashMap<>());
-
-        prevJumpCache.put(prevJump, canCross);
+        cache.put(key, canCross);
 
         return canCross;
     }
@@ -94,7 +99,7 @@ class Solution {
             this.stones.add(stone);
         }
 
-        startCache.clear();
+        cache.clear();
 
         return canCrossFrom(0, 0);
     }
