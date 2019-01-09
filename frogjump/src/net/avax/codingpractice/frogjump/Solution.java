@@ -37,17 +37,28 @@ import java.util.Set;
 // [It seems that this "optimization" had the opposite effect!]
 //
 // https://leetcode.com/submissions/detail/200155246/
+//
+// Fourth attempt, backing out cache "optimization" and adding up-front
+// impossibility checks:
+//
+// 39 / 39 test cases passed.
+// Status: Accepted
+// Runtime: 97 ms, faster than 35.64% of Java online submissions for Frog Jump.
+//
+// https://leetcode.com/submissions/detail/200167287/
 
 class Solution {
     int finalPosition;
     Set<Integer> stones = new HashSet<>();
-    Map<Long, Boolean> cache = new HashMap<>();
+    Map<Integer, Map<Integer, Boolean>> startCache = new HashMap<>();
 
     private boolean canCrossFrom(int start, int prevJump) {
-        final long key = ((long) start << Integer.SIZE) | prevJump;
+        if (startCache.containsKey(start)) {
+            Map<Integer, Boolean> prevJumpCache = startCache.get(start);
 
-        if (cache.containsKey(key)) {
-            return cache.get(key);
+            if (prevJumpCache.containsKey(prevJump)) {
+                return prevJumpCache.get(prevJump);
+            }
         }
 
         int shorterJump = prevJump - 1;
@@ -85,7 +96,10 @@ class Solution {
             }
         }
 
-        cache.put(key, canCross);
+        Map<Integer, Boolean> prevJumpCache
+                = startCache.computeIfAbsent(start, k -> new HashMap<>());
+
+        prevJumpCache.put(prevJump, canCross);
 
         return canCross;
     }
@@ -95,11 +109,21 @@ class Solution {
 
         this.stones.clear();
 
+        int prevStone = 0;
+        int maxJump = 0;
+
         for (int stone : stones) {
+            if (stone - prevStone > maxJump) {
+                return false;
+            }
+
             this.stones.add(stone);
+
+            prevStone = stone;
+            maxJump++;
         }
 
-        cache.clear();
+        startCache.clear();
 
         return canCrossFrom(0, 0);
     }
