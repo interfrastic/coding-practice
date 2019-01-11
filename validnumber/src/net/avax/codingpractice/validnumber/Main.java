@@ -23,6 +23,10 @@ public class Main {
         expecteResultForInput.put(" --6 ", false);
         expecteResultForInput.put("-+3", false);
         expecteResultForInput.put("95a54e53", false);
+        expecteResultForInput.put(".", false);
+        expecteResultForInput.put("1 ", true);
+        expecteResultForInput.put(".1", true);
+        expecteResultForInput.put("46.e3", true);
 
         Solution solution = new Solution();
 
