@@ -48,6 +48,15 @@ public class Main {
                         new Interval(6, 7),
                         new Interval(8, 9),
                         new Interval(1, 10)
+                ).collect(Collectors.toList()),
+                Stream.of(
+                        new Interval(2, 3),
+                        new Interval(2, 2),
+                        new Interval(3, 3),
+                        new Interval(1, 3),
+                        new Interval(5, 7),
+                        new Interval(2, 2),
+                        new Interval(4, 6)
                 ).collect(Collectors.toList())
                 ).collect(Collectors.toList());
 

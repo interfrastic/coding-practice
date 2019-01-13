@@ -56,43 +56,46 @@ import java.util.List;
 // Input:    [[2,3],[4,5],[6,7],[8,9],[1,10]]
 // Output:   [[2,3],[4,5],[6,7],[1,10]]
 // Expected: [[1,10]]
+//
+// Third attempt: revert to in-place list manipulations, but reduce memory
+// usage by avoiding recursion.
+//
+// 169 / 169 test cases passed.
+// Status: Accepted
+// Runtime: 23 ms, faster than 68.50% of Java online submissions for Merge
+// Intervals.
+//
+// https://leetcode.com/submissions/detail/200881981/
 
 class Solution {
+    private boolean overlap(Interval a, Interval b) {
+        return (a.end >= b.start && a.start <= b.end)
+                || (b.end >= a.start && b.start <= a.end);
+    }
+
     public List<Interval> merge(List<Interval> intervals) {
-        int size = intervals.size();
-        List<Interval> mergedIntervals = new ArrayList<>();
-        int leftIndex = 0;
+        List<Interval> mergedIntervals = new ArrayList<>(intervals);
+        int mergeCount;
 
-        while (leftIndex < size) {
-            Interval left = intervals.get(leftIndex);
-            int start = left.start;
-            int rightIndex = leftIndex + 1;
-            Interval right;
-            int end = left.end;
+        do {
+            mergeCount = 0;
 
-            while (rightIndex < size
-                    && (end >= (right = intervals.get(rightIndex)).start
-                    && start <= right.end)) {
-                if (right.start < start) {
-                    start = right.start;
+            for (int i = 0; i < mergedIntervals.size(); i++) {
+                Interval left = mergedIntervals.get(i);
+
+                for (int j = i + 1; j < mergedIntervals.size(); j++) {
+                    Interval right = mergedIntervals.get(j);
+
+                    if (overlap(left, right)) {
+                        left = new Interval(Math.min(left.start, right.start),
+                                Math.max(left.end, right.end));
+                        mergedIntervals.set(i, left);
+                        mergedIntervals.remove(j);
+                        mergeCount++;
+                    }
                 }
-
-                if (right.end > end) {
-                    end = right.end;
-                }
-
-                leftIndex = rightIndex;
-                rightIndex++;
             }
-
-            if (start == left.start && end == left.end) {
-                mergedIntervals.add(left);
-            } else {
-                mergedIntervals.add(new Interval(start, end));
-            }
-
-            leftIndex++;
-        }
+        } while (mergeCount > 0);
 
         return mergedIntervals;
     }
