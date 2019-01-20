@@ -23,67 +23,80 @@ package net.avax.codingpractice.integertoenglishwords;
 // English Words.
 //
 // https://leetcode.com/submissions/detail/202245051/
+//
+// Third attempt: try eliminating recursion.
+//
+// 601 / 601 test cases passed.
+// Status: Accepted
+// Runtime: 7 ms, faster than 14.27% of Java online submissions for Integer to
+// English Words.
+//
+// https://leetcode.com/submissions/detail/202280327/
 
 import java.util.StringJoiner;
 
 class Solution {
-    private static final int powerBase = 1_000;
-    private static final int maxPowerValue = powerBase * powerBase * powerBase;
-    private static final String[] powerValueNames = {"Thousand", "Million",
-            "Billion"};
-    @SuppressWarnings("FieldCanBeLocal")
-    private static final String hundredName = "Hundred";
-    private static final String[] multipleOfTenNames = {"Twenty", "Thirty",
-            "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
-    private static final String[] underTwentyNames = {"Zero", "One", "Two",
-            "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
-            "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
-            "Seventeen", "Eighteen", "Nineteen"};
+    private static void numUnderTwentyToWords(int num, StringJoiner sj) {
+        final String[] underTwentyName = {"Zero", "One", "Two", "Three", "Four",
+                "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven",
+                "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
+                "Seventeen", "Eighteen", "Nineteen"};
 
-    private void numToWords(int num, StringJoiner sj) {
-        if (num >= powerBase) {
-            int powerValue = maxPowerValue;
-            int powerValueNameIndex = powerValueNames.length;
+        sj.add(underTwentyName[num]);
+    }
 
-            do {
-                powerValueNameIndex--;
+    private static void numTwentyToNinetyNineToWords(int num, StringJoiner sj) {
+        final String[] multipleOfTenNames = {"Twenty", "Thirty", "Forty",
+                "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
 
-                int powerValueNumPart = num / powerValue % powerBase;
+        int tens = num / 10;
+        int remainder = num % 10;
 
-                if (powerValueNumPart != 0) {
-                    numToWords(powerValueNumPart, sj);
+        sj.add(multipleOfTenNames[tens - 2]);
 
-                    if (powerValueNameIndex >= 0) {
-                        String powerValueName
-                                = powerValueNames[powerValueNameIndex];
+        if (remainder != 0 || sj.length() == 0) {
+            numUnderTwentyToWords(remainder, sj);
+        }
+    }
 
-                        sj.add(powerValueName);
-                    }
-                }
+    private static void numUnderThousandToWords(int num, StringJoiner sj) {
+        final String hundredName = "Hundred";
+        int hundreds = num / 100;
+        int remainder = num % 100;
 
-                powerValue /= powerBase;
-            } while (powerValue > 0);
-        } else if (num >= 100) {
-            int quotient = num / 100;
-            int remainder = num % 100;
-
-            numToWords(quotient, sj);
+        if (hundreds != 0) {
+            numUnderTwentyToWords(hundreds, sj);
             sj.add(hundredName);
+        }
 
-            if (remainder != 0) {
-                numToWords(remainder, sj);
+        if (remainder != 0 || sj.length() == 0) {
+            if (remainder < 20) {
+                numUnderTwentyToWords(remainder, sj);
+            } else {
+                numTwentyToNinetyNineToWords(remainder, sj);
             }
-        } else if (num >= 20) {
-            int quotient = num / 10;
-            int remainder = num % 10;
+        }
+    }
 
-            sj.add(multipleOfTenNames[quotient - 2]);
+    private static void numToWords(int num, StringJoiner sj) {
+        final String[] powerValueNames = {"Billion", "Million", "Thousand"};
+        int powerValue = 1_000_000_000;
 
-            if (remainder != 0) {
-                numToWords(remainder, sj);
+        for (String powerValueName : powerValueNames) {
+            int powerValueNumPart = num / powerValue % 1_000;
+
+            if (powerValueNumPart != 0) {
+                numUnderThousandToWords(powerValueNumPart, sj);
+                sj.add(powerValueName);
             }
-        } else if (num >= 0) {
-            sj.add(underTwentyNames[num]);
+
+            powerValue /= 1_000;
+        }
+
+        int underThousandNumPart = num % 1_000;
+
+        if (underThousandNumPart != 0 || sj.length() == 0) {
+            numUnderThousandToWords(underThousandNumPart, sj);
         }
     }
 
