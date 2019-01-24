@@ -29,6 +29,12 @@ char* readline(void);
 // Score: 28.82  Status: Terminated due to timeout
 //
 // https://www.hackerrank.com/challenges/sherlock-and-valid-string/submissions/code/96721966
+//
+// Second attempt: try counting the occurrences of each of two distinct counts.
+//
+// Score: 35.00  Status: Accepted
+//
+// https://www.hackerrank.com/challenges/sherlock-and-valid-string/submissions/code/96822028
 
 // Complete the isValid function below.
 
@@ -42,48 +48,85 @@ char* readline(void);
 // return str;
 //
 
-#define MIN_CHAR 'a'
-#define MAX_CHAR 'z'
-#define COUNTS_SIZE (MAX_CHAR - MIN_CHAR + 1)
-
-bool areAllCountsEqual(char * s, size_t len, size_t ignoreIndex) {
-    int counts[COUNTS_SIZE] = {0};
-
-    for (int index = 0; index < len; index++) {
-        if (index != ignoreIndex) {
-            counts[s[index] - MIN_CHAR]++;
-        }
-    }
-
-    int sharedCount = 0;
-
-    for (int index = 0; index < COUNTS_SIZE; index++) {
-        if (counts[index] > 0) {
-            if (sharedCount == 0) {
-                sharedCount = counts[index];
-            } else if (counts[index] != sharedCount) {
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
-
 char * isValid(char * s) {
-    size_t len = strlen(s);
+    int counts[26] = {0};
+    char c;
 
-    if (areAllCountsEqual(s, len, -1)) {
-        return "YES";
+    while ((c = *s++) != 0) {
+        counts[c - 'a']++;
     }
 
-    for (int i = 0; i < len; i++) {
-        if (areAllCountsEqual(s, len, i)) {
-            return "YES";
+    int distinctCount1 = 0;
+    int distinctCount1Freq = 0;
+    int distinctCount2 = 0;
+    int distinctCount2Freq = 0;
+
+    for (int i = 0; i < 26; i++) {
+        int count = counts[i];
+
+        // Ignore empty bins.
+
+        if (count == 0) {
+            continue;
+        }
+
+        // Keep track of the first and second distinct letter counts and the
+        // number of times each has occurred so far.
+
+        if (distinctCount1 == 0 || count == distinctCount1) {
+            distinctCount1 = count;
+            distinctCount1Freq++;
+        } else if (distinctCount2 == 0 || count == distinctCount2) {
+            distinctCount2 = count;
+            distinctCount2Freq++;
+        }
+
+        // If we see a third distinct letter count, we know we can't fix it with
+        // a single deletion.
+
+        if (count != distinctCount1
+            && distinctCount2 != 0 && count != distinctCount2) {
+            return "NO";
         }
     }
 
-    return "NO";
+    // If there are two distinct letter counts, then see if we can fix things
+    // with a deletion.
+
+    if (distinctCount2Freq > 0) {
+
+        // If each distinct letter count is shared by more than one letter, then
+        // there is no way to fix it with a single deletion.
+
+        if (distinctCount1Freq > 1 && distinctCount2Freq > 1) {
+            return "NO";
+        }
+
+        // If we reach this point, at least one of the distinct counts occurs
+        // for exactly one letter; first, we figure out which count is which.
+
+        int loneDistinctCount;
+        int otherDistinctCount;
+
+        if (distinctCount1Freq == 1) {
+            loneDistinctCount = distinctCount1;
+            otherDistinctCount = distinctCount2;
+        } else {
+            loneDistinctCount = distinctCount2;
+            otherDistinctCount = distinctCount1;
+        }
+
+        // A deletion is possible either if the lone non-matching letter occurs
+        // exactly once, or if it occurs exactly once more than the other
+        // letters; otherwise, the string is invalid and cannot be fixed.
+
+        if (loneDistinctCount != 1
+              && loneDistinctCount - otherDistinctCount != 1) {
+            return "NO";
+        }
+    }
+
+    return "YES";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
