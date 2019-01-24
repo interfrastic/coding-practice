@@ -35,6 +35,12 @@ char* readline(void);
 // Score: 35.00  Status: Accepted
 //
 // https://www.hackerrank.com/challenges/sherlock-and-valid-string/submissions/code/96822028
+//
+// Third attempt: clean up code and comments.
+//
+// Score: 35.00  Status: Accepted
+//
+// https://www.hackerrank.com/challenges/sherlock-and-valid-string/submissions/code/96823650
 
 // Complete the isValid function below.
 
@@ -49,20 +55,27 @@ char* readline(void);
 //
 
 char * isValid(char * s) {
-    int counts[26] = {0};
+
+    // Use an array as a 26-bin histogram of the letter frequencies.
+
+    int freqs[26] = {0};
     char c;
 
     while ((c = *s++) != 0) {
-        counts[c - 'a']++;
+        freqs[c - 'a']++;
     }
 
-    int distinctCount1 = 0;
-    int distinctCount1Freq = 0;
-    int distinctCount2 = 0;
-    int distinctCount2Freq = 0;
+    // Now analyze the letter frequency histogram to determine whether all non-
+    // zero frequencies are equal or, if they are not, whether they can be made
+    // equal with a single deletion.
+
+    int firstFreq = 0;
+    int firstFreqCount = 0;
+    int secondFreq = 0;
+    int secondFreqCount = 0;
 
     for (int i = 0; i < 26; i++) {
-        int count = counts[i];
+        int count = freqs[i];
 
         // Ignore empty bins.
 
@@ -70,61 +83,60 @@ char * isValid(char * s) {
             continue;
         }
 
-        // Keep track of the first and second distinct letter counts and the
-        // number of times each has occurred so far.
+        // Keep track of the first and second distinct letter frequencies and
+        // the number of different letters that share each one.
 
-        if (distinctCount1 == 0 || count == distinctCount1) {
-            distinctCount1 = count;
-            distinctCount1Freq++;
-        } else if (distinctCount2 == 0 || count == distinctCount2) {
-            distinctCount2 = count;
-            distinctCount2Freq++;
-        }
+        if (firstFreq == 0 || count == firstFreq) {
+            firstFreq = count;
+            firstFreqCount++;
+        } else if (secondFreq == 0 || count == secondFreq) {
+            secondFreq = count;
+            secondFreqCount++;
+        } else {
 
-        // If we see a third distinct letter count, we know we can't fix it with
-        // a single deletion.
+            // If we see a third distinct letter frequency, then we know we
+            // can't fix it with a single deletion.
 
-        if (count != distinctCount1
-            && distinctCount2 != 0 && count != distinctCount2) {
             return "NO";
         }
     }
 
-    // If there are two distinct letter counts, then see if we can fix things
-    // with a deletion.
+    // If there are exactly two distinct letter frequencies, then see if we can
+    // fix things with a single deletion.
 
-    if (distinctCount2Freq > 0) {
+    if (secondFreqCount > 0) {
 
-        // If each distinct letter count is shared by more than one letter, then
-        // there is no way to fix it with a single deletion.
+        // If each distinct letter frequency is shared by more than one letter,
+        // then there is no way to fix it with a single deletion.
 
-        if (distinctCount1Freq > 1 && distinctCount2Freq > 1) {
+        if (firstFreqCount > 1 && secondFreqCount > 1) {
             return "NO";
         }
 
-        // If we reach this point, at least one of the distinct counts occurs
-        // for exactly one letter; first, we figure out which count is which.
+        // If we reach this point, then at least one of the distinct frequencies
+        // occurs for exactly one letter; first, we figure out which is which.
 
-        int loneDistinctCount;
-        int otherDistinctCount;
+        int loneFreq;
+        int otherFreq;
 
-        if (distinctCount1Freq == 1) {
-            loneDistinctCount = distinctCount1;
-            otherDistinctCount = distinctCount2;
+        if (firstFreqCount == 1) {
+            loneFreq = firstFreq;
+            otherFreq = secondFreq;
         } else {
-            loneDistinctCount = distinctCount2;
-            otherDistinctCount = distinctCount1;
+            loneFreq = secondFreq;
+            otherFreq = firstFreq;
         }
 
         // A deletion is possible either if the lone non-matching letter occurs
         // exactly once, or if it occurs exactly once more than the other
         // letters; otherwise, the string is invalid and cannot be fixed.
 
-        if (loneDistinctCount != 1
-              && loneDistinctCount - otherDistinctCount != 1) {
+        if (loneFreq != 1 && loneFreq - otherFreq != 1) {
             return "NO";
         }
     }
+
+    // If we made it here, the string is valid!
 
     return "YES";
 }
