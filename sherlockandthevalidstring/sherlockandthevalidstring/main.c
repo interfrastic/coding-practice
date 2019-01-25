@@ -41,6 +41,12 @@ char* readline(void);
 // Score: 35.00  Status: Accepted
 //
 // https://www.hackerrank.com/challenges/sherlock-and-valid-string/submissions/code/96823650
+//
+// Fourth attempt: fail earlier when no lone frequency found, finish cleanup.
+//
+// Score: 35.00  Status: Accepted
+//
+// https://www.hackerrank.com/challenges/sherlock-and-valid-string/submissions/code/96835133
 
 // Complete the isValid function below.
 
@@ -75,22 +81,22 @@ char * isValid(char * s) {
     int secondFreqCount = 0;
 
     for (int i = 0; i < 26; i++) {
-        int count = freqs[i];
+        int freq = freqs[i];
 
         // Ignore empty bins.
 
-        if (count == 0) {
+        if (freq == 0) {
             continue;
         }
 
         // Keep track of the first and second distinct letter frequencies and
         // the number of different letters that share each one.
 
-        if (firstFreq == 0 || count == firstFreq) {
-            firstFreq = count;
+        if (firstFreq == 0 || freq == firstFreq) {
+            firstFreq = freq;
             firstFreqCount++;
-        } else if (secondFreq == 0 || count == secondFreq) {
-            secondFreq = count;
+        } else if (secondFreq == 0 || freq == secondFreq) {
+            secondFreq = freq;
             secondFreqCount++;
         } else {
 
@@ -99,12 +105,6 @@ char * isValid(char * s) {
 
             return "NO";
         }
-    }
-
-    // If there are exactly two distinct letter frequencies, then see if we can
-    // fix things with a single deletion.
-
-    if (secondFreqCount > 0) {
 
         // If each distinct letter frequency is shared by more than one letter,
         // then there is no way to fix it with a single deletion.
@@ -112,6 +112,12 @@ char * isValid(char * s) {
         if (firstFreqCount > 1 && secondFreqCount > 1) {
             return "NO";
         }
+    }
+
+    // If there are exactly two distinct letter frequencies, then see if we can
+    // fix things with a single deletion.
+
+    if (secondFreqCount > 0) {
 
         // If we reach this point, then at least one of the distinct frequencies
         // occurs for exactly one letter; first, we figure out which is which.
