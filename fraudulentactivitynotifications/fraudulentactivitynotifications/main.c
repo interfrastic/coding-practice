@@ -16,13 +16,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-char* readline();
+char* readline(void);
 char** split_string(char*);
 
 // Complete the activityNotifications function below.
 int activityNotifications(int expenditure_count, int* expenditure, int d) {
-
-
+    return 0;
 }
 
 int main()
@@ -33,13 +32,13 @@ int main()
 
     char* n_endptr;
     char* n_str = nd[0];
-    int n = strtol(n_str, &n_endptr, 10);
+    int n = (int)strtol(n_str, &n_endptr, 10);
 
     if (n_endptr == n_str || *n_endptr != '\0') { exit(EXIT_FAILURE); }
 
     char* d_endptr;
     char* d_str = nd[1];
-    int d = strtol(d_str, &d_endptr, 10);
+    int d = (int)strtol(d_str, &d_endptr, 10);
 
     if (d_endptr == d_str || *d_endptr != '\0') { exit(EXIT_FAILURE); }
 
@@ -50,7 +49,7 @@ int main()
     for (int i = 0; i < n; i++) {
         char* expenditure_item_endptr;
         char* expenditure_item_str = *(expenditure_temp + i);
-        int expenditure_item = strtol(expenditure_item_str, &expenditure_item_endptr, 10);
+        int expenditure_item = (int)strtol(expenditure_item_str, &expenditure_item_endptr, 10);
 
         if (expenditure_item_endptr == expenditure_item_str || *expenditure_item_endptr != '\0') { exit(EXIT_FAILURE); }
 
@@ -75,7 +74,7 @@ char* readline() {
 
     while (true) {
         char* cursor = data + data_length;
-        char* line = fgets(cursor, alloc_length - data_length, stdin);
+        char* line = fgets(cursor, (int)(alloc_length - data_length), stdin);
 
         if (!line) { break; }
 
