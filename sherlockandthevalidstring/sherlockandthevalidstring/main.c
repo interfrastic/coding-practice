@@ -151,8 +151,8 @@ char * isValid(char * s) {
 
 int main()
 {
-//    FILE* fptr = fopen(getenv("OUTPUT_PATH"), "w");
-    FILE* fptr = stdout;
+    char* op = getenv("OUTPUT_PATH");
+    FILE* fptr = (op == NULL) ? stdout : fopen(op, "w");
 
     char* s = readline();
 
@@ -160,7 +160,9 @@ int main()
 
     fprintf(fptr, "%s\n", result);
 
-    fclose(fptr);
+    if (fptr != stdout) {
+        fclose(fptr);
+    }
 
     return 0;
 }
