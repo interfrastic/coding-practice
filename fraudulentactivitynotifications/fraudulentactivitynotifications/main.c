@@ -19,14 +19,69 @@
 char* readline(void);
 char** split_string(char*);
 
+////////////////////////////////////////////////////////////////////////////////
+//
+// HackerRank: Sorting: Fraudulent Activity Notifications
+//
+// https://www.hackerrank.com/challenges/fraudulent-activity-notifications/problem
+//
+// First attempt: simplest solution that works.
+//
+// Score: 0.00  Status: Terminated due to timeout
+//
+// https://www.hackerrank.com/challenges/fraudulent-activity-notifications/submissions/code/97447491
+
 // Complete the activityNotifications function below.
-int activityNotifications(int expenditure_count, int* expenditure, int d) {
-    return 0;
+
+int compar (const void * a, const void * b) {
+    return ( *(int *)a - *(int *)b );
+}
+
+double getMedian(int i, int d, int * values, int * sortedValues) {
+    memcpy(sortedValues, values + i, d * sizeof(int));
+
+    qsort(sortedValues, d, sizeof(int), compar);
+
+    double median = 0.0;
+    int quotient = d / 2;
+    int remainder = d % 2;
+
+    if (remainder == 0) {
+        median = (sortedValues[quotient - 1] + sortedValues[quotient])/2.0;
+    } else {
+        median = sortedValues[quotient];
+    }
+
+    return median;
+}
+
+int activityNotifications(int expendituresLength, int * expenditures, int d) {
+    int * sortedExpenditures = malloc(d * sizeof(int));
+
+    int notificationCount = 0;
+
+    for (int i = 0; i < expendituresLength; i++) {
+        double expenditure = expenditures[i];
+
+        if (i >= d) {
+            double medianExpenditure
+                = getMedian(i - d, d, expenditures, sortedExpenditures);
+
+            if (expenditure >= 2 * medianExpenditure) {
+                notificationCount++;
+            }
+        }
+    }
+
+    free(sortedExpenditures);
+
+    return notificationCount;
 }
 
 int main()
 {
-    FILE* fptr = fopen(getenv("OUTPUT_PATH"), "w");
+    char* op = getenv("OUTPUT_PATH");
+    FILE* fptr = (op == NULL) ? stdout : fopen(op, "w");
 
     char** nd = split_string(readline());
 
@@ -62,7 +117,9 @@ int main()
 
     fprintf(fptr, "%d\n", result);
 
-    fclose(fptr);
+    if (fptr != stdout) {
+        fclose(fptr);
+    }
 
     return 0;
 }
