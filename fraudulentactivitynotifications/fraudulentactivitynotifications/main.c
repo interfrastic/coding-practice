@@ -30,50 +30,75 @@ char** split_string(char*);
 // Score: 0.00  Status: Terminated due to timeout
 //
 // https://www.hackerrank.com/challenges/fraudulent-activity-notifications/submissions/code/97447491
+//
+// Second attempt: try counting sort.
+//
+// Score: 24.00  Status: Terminated due to timeout
+//
+// https://www.hackerrank.com/challenges/fraudulent-activity-notifications/submissions/code/97930234
 
 // Complete the activityNotifications function below.
 
-int compar (const void * a, const void * b) {
-    return ( *(int *)a - *(int *)b );
-}
+#define MAX_EXPEND 200
 
-double getMedian(int i, int d, int * values, int * sortedValues) {
-    memcpy(sortedValues, values + i, d * sizeof(int));
+int getNewLimit(int * expends, int d, int * expendCounts, int expendIndex) {
+    int expendRollingIn = expends[expendIndex];
 
-    qsort(sortedValues, d, sizeof(int), compar);
+    expendCounts[expendRollingIn]++;
 
-    double median = 0.0;
-    int quotient = d / 2;
-    int remainder = d % 2;
+    if (expendIndex >= d) {
+        int expendRollingOut = expends[expendIndex - d];
 
-    if (remainder == 0) {
-        median = (sortedValues[quotient - 1] + sortedValues[quotient])/2.0;
-    } else {
-        median = sortedValues[quotient];
+        expendCounts[expendRollingOut]--;
     }
 
-    return median;
-}
+    int rightSortedExpendIndex = d / 2;
+    int leftSortedExpendIndex = rightSortedExpendIndex - 1 + d % 2;
+    int sortedExpendIndex = 0;
+    int leftSortedExpend = -1;
+    int rightSortedExpend = -1;
 
-int activityNotifications(int expendituresLength, int * expenditures, int d) {
-    int * sortedExpenditures = malloc(d * sizeof(int));
+    for (int sortedExpend = 0; sortedExpend < MAX_EXPEND; sortedExpend++) {
+        int expendCount = expendCounts[sortedExpend];
 
-    int notificationCount = 0;
-
-    for (int i = 0; i < expendituresLength; i++) {
-        double expenditure = expenditures[i];
-
-        if (i >= d) {
-            double medianExpenditure
-                = getMedian(i - d, d, expenditures, sortedExpenditures);
-
-            if (expenditure >= 2 * medianExpenditure) {
-                notificationCount++;
+        for (int count = 0; count < expendCount; count++) {
+            if (sortedExpendIndex == leftSortedExpendIndex) {
+                leftSortedExpend = sortedExpend;
             }
+
+            if (sortedExpendIndex == rightSortedExpendIndex) {
+                rightSortedExpend = sortedExpend;
+
+                return leftSortedExpend + rightSortedExpend;
+            }
+
+            sortedExpendIndex++;
         }
     }
 
-    free(sortedExpenditures);
+    return -1;
+}
+
+int activityNotifications(int expendsLen, int * expends, int d) {
+    if (expendsLen <= d || d < 1) {
+        return 0;
+    }
+
+    int * expendCounts = calloc(MAX_EXPEND, sizeof(int));
+    int notificationCount = 0;
+    int limit = -1;
+
+    for (int expendIndex = 0; expendIndex < expendsLen; expendIndex++) {
+        int expend = expends[expendIndex];
+
+        if (expendIndex >= d && expend >= limit) {
+            notificationCount++;
+        }
+
+        limit = getNewLimit(expends, d, expendCounts, expendIndex);
+    }
+
+    free(expendCounts);
 
     return notificationCount;
 }
@@ -175,3 +200,4 @@ char** split_string(char* str) {
 
     return splits;
 }
+
