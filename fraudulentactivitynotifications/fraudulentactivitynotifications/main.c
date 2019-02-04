@@ -36,12 +36,22 @@ char** split_string(char*);
 // Score: 24.00  Status: Terminated due to timeout
 //
 // https://www.hackerrank.com/challenges/fraudulent-activity-notifications/submissions/code/97930234
+//
+// Third attempt: optimize counting sort approach.
+//
+// Score: 32.00  Status: Terminated due to timeout
+//
+// https://www.hackerrank.com/challenges/fraudulent-activity-notifications/submissions/code/97943130
 
 // Complete the activityNotifications function below.
 
 #define MAX_EXPEND 200
 
-int getNewLimit(int * expends, int d, int * expendCounts, int expendIndex) {
+inline static void updateLimit(int d, int * expendCounts, int expendIndex,
+                               int * expends, int leftSortedExpendIndex,
+                               int * pLeftSortedExpend, int * pLimit,
+                               int * pRightSortedExpend,
+                               int rightSortedExpendIndex) {
     int expendRollingIn = expends[expendIndex];
 
     expendCounts[expendRollingIn]++;
@@ -50,33 +60,33 @@ int getNewLimit(int * expends, int d, int * expendCounts, int expendIndex) {
         int expendRollingOut = expends[expendIndex - d];
 
         expendCounts[expendRollingOut]--;
+
+        if (expendRollingIn >= expendRollingOut
+            && expendRollingIn <= *pLeftSortedExpend) {
+            return;
+        }
     }
 
-    int rightSortedExpendIndex = d / 2;
-    int leftSortedExpendIndex = rightSortedExpendIndex - 1 + d % 2;
     int sortedExpendIndex = 0;
-    int leftSortedExpend = -1;
-    int rightSortedExpend = -1;
 
     for (int sortedExpend = 0; sortedExpend < MAX_EXPEND; sortedExpend++) {
         int expendCount = expendCounts[sortedExpend];
 
         for (int count = 0; count < expendCount; count++) {
             if (sortedExpendIndex == leftSortedExpendIndex) {
-                leftSortedExpend = sortedExpend;
+                *pLeftSortedExpend = sortedExpend;
             }
 
             if (sortedExpendIndex == rightSortedExpendIndex) {
-                rightSortedExpend = sortedExpend;
+                *pRightSortedExpend = sortedExpend;
+                *pLimit = *pRightSortedExpend + *pLeftSortedExpend;
 
-                return leftSortedExpend + rightSortedExpend;
+                return;
             }
 
             sortedExpendIndex++;
         }
     }
-
-    return -1;
 }
 
 int activityNotifications(int expendsLen, int * expends, int d) {
@@ -85,8 +95,12 @@ int activityNotifications(int expendsLen, int * expends, int d) {
     }
 
     int * expendCounts = calloc(MAX_EXPEND, sizeof(int));
-    int notificationCount = 0;
+    int rightSortedExpendIndex = d / 2;
+    int rightSortedExpend = -1;
+    int leftSortedExpendIndex = rightSortedExpendIndex - 1 + d % 2;
+    int leftSortedExpend = -1;
     int limit = -1;
+    int notificationCount = 0;
 
     for (int expendIndex = 0; expendIndex < expendsLen; expendIndex++) {
         int expend = expends[expendIndex];
@@ -95,7 +109,9 @@ int activityNotifications(int expendsLen, int * expends, int d) {
             notificationCount++;
         }
 
-        limit = getNewLimit(expends, d, expendCounts, expendIndex);
+        updateLimit(d, expendCounts, expendIndex, expends,
+                    leftSortedExpendIndex, &leftSortedExpend, &limit,
+                    &rightSortedExpend, rightSortedExpendIndex);
     }
 
     free(expendCounts);
@@ -200,4 +216,3 @@ char** split_string(char* str) {
 
     return splits;
 }
-
