@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-char* readline(void);
+char* readline(FILE*);
 char** split_string(char*);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -129,10 +129,12 @@ int activityNotifications(int expendsLen, int * expends, int d) {
 
 int main()
 {
+    char* ip = getenv("INPUT_PATH");
+    FILE* ifptr = (ip == NULL) ? stdin : fopen(ip, "r");
     char* op = getenv("OUTPUT_PATH");
-    FILE* fptr = (op == NULL) ? stdout : fopen(op, "w");
+    FILE* ofptr = (op == NULL) ? stdout : fopen(op, "w");
 
-    char** nd = split_string(readline());
+    char** nd = split_string(readline(ifptr));
 
     char* n_endptr;
     char* n_str = nd[0];
@@ -146,7 +148,7 @@ int main()
 
     if (d_endptr == d_str || *d_endptr != '\0') { exit(EXIT_FAILURE); }
 
-    char** expenditure_temp = split_string(readline());
+    char** expenditure_temp = split_string(readline(ifptr));
 
     int* expenditure = malloc(n * sizeof(int));
 
@@ -164,23 +166,27 @@ int main()
 
     int result = activityNotifications(expenditure_count, expenditure, d);
 
-    fprintf(fptr, "%d\n", result);
+    fprintf(ofptr, "%d\n", result);
 
-    if (fptr != stdout) {
-        fclose(fptr);
+    if (ifptr != stdin) {
+        fclose(ifptr);
+    }
+
+    if (ofptr != stdout) {
+        fclose(ofptr);
     }
 
     return 0;
 }
 
-char* readline() {
+char* readline(FILE* ifptr) {
     size_t alloc_length = 1024;
     size_t data_length = 0;
     char* data = malloc(alloc_length);
 
     while (true) {
         char* cursor = data + data_length;
-        char* line = fgets(cursor, (int)(alloc_length - data_length), stdin);
+        char* line = fgets(cursor, (int)(alloc_length - data_length), ifptr);
 
         if (!line) { break; }
 
