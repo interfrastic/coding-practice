@@ -42,6 +42,12 @@ char** split_string(char*);
 // Score: 32.00  Status: Terminated due to timeout
 //
 // https://www.hackerrank.com/challenges/fraudulent-activity-notifications/submissions/code/97943130
+//
+// Fourth attempt: further optimize counting sort approach.
+//
+// Score: 40.00  Status: Accepted
+//
+// https://www.hackerrank.com/challenges/fraudulent-activity-notifications/submissions/code/97945976
 
 // Complete the activityNotifications function below.
 
@@ -61,8 +67,10 @@ inline static void updateLimit(int d, int * expendCounts, int expendIndex,
 
         expendCounts[expendRollingOut]--;
 
-        if (expendRollingIn >= expendRollingOut
-            && expendRollingIn <= *pLeftSortedExpend) {
+        if ((expendRollingIn <= *pLeftSortedExpend
+             && expendRollingOut <= *pLeftSortedExpend)
+            || (expendRollingIn >= *pRightSortedExpend
+                && expendRollingOut >= *pRightSortedExpend)){
             return;
         }
     }
