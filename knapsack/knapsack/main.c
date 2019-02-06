@@ -24,11 +24,56 @@ char** split_string(char*);
 // HackerRank: Dynamic Programming: Knapsack
 //
 // https://www.hackerrank.com/challenges/unbounded-knapsack/problem
+//
+// First attempt: try simplest approach that will work.
+//
+// Score: 38.13  Status: Terminated due to timeout
+//
+// https://www.hackerrank.com/challenges/unbounded-knapsack/submissions/code/98168832
+
+#define MAX_VALUE 2000
+#define MIN_VALUE 1
+#define MAX_BUCKET_INDEX (MAX_VALUE - MIN_VALUE)
+#define BUCKETS_LEN (MAX_BUCKET_INDEX + 1)
+
+void permute(int coeffs [BUCKETS_LEN], int currentIndex,
+             const int buckets [BUCKETS_LEN], int targetSum, int * pMaxSum) {
+    for (coeffs[currentIndex] = 0;
+         coeffs[currentIndex] <= buckets[currentIndex];
+         coeffs[currentIndex]++) {
+        if (currentIndex < MAX_BUCKET_INDEX) {
+            permute(coeffs, currentIndex + 1, buckets, targetSum, pMaxSum);
+        } else {
+            int sum = 0;
+
+            for (int index = 0; index <= MAX_BUCKET_INDEX; index++) {
+                sum += coeffs[index] * (index + MIN_VALUE);
+            }
+
+            if (sum <= targetSum && sum > *pMaxSum) {
+                *pMaxSum = sum;
+            }
+        }
+    }
+}
 
 // Complete the unboundedKnapsack function below.
-int unboundedKnapsack(int k, int arr_count, int* arr) {
 
-    return -1;
+int unboundedKnapsack(int k, int n, int * arr) {
+    int buckets[BUCKETS_LEN] = {0};
+    int coeffs[BUCKETS_LEN];
+
+    for (int i = 0; i < n; i++) {
+        int value = arr[i];
+
+        buckets[value - MIN_VALUE] = k / value;
+    }
+
+    int maxSum = 0;
+
+    permute(coeffs, 0, buckets, k, &maxSum);
+
+    return maxSum;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
