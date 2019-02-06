@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-char* readline();
+char* readline(FILE*);
 char** split_string(char*);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -28,68 +28,73 @@ char** split_string(char*);
 // Complete the unboundedKnapsack function below.
 int unboundedKnapsack(int k, int arr_count, int* arr) {
 
-
+    return -1;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 int main()
 {
-    FILE* fptr = fopen(getenv("OUTPUT_PATH"), "w");
+    char* ip = getenv("INPUT_PATH");
+    FILE* ifptr = (ip == NULL) ? stdin : fopen(ip, "r");
+    char* op = getenv("OUTPUT_PATH");
+    FILE* ofptr = (op == NULL) ? stdout : fopen(op, "w");
 
     char* t_endptr;
-    char* t_str = readline();
-    int t = strtol(t_str, &t_endptr, 10);
+    char* t_str = readline(ifptr);
+    int t = (int)strtol(t_str, &t_endptr, 10);
 
     if (t_endptr == t_str || *t_endptr != '\0') { exit(EXIT_FAILURE); }
 
-    char** nk = split_string(readline());
+    while (t-- > 0) {
+        char** nk = split_string(readline(ifptr));
 
-    char* n_endptr;
-    char* n_str = nk[0];
-    int n = strtol(n_str, &n_endptr, 10);
+        char* n_endptr;
+        char* n_str = nk[0];
+        int n = (int)strtol(n_str, &n_endptr, 10);
 
-    if (n_endptr == n_str || *n_endptr != '\0') { exit(EXIT_FAILURE); }
+        if (n_endptr == n_str || *n_endptr != '\0') { exit(EXIT_FAILURE); }
 
-    char* k_endptr;
-    char* k_str = nk[1];
-    int k = strtol(k_str, &k_endptr, 10);
+        char* k_endptr;
+        char* k_str = nk[1];
+        int k = (int)strtol(k_str, &k_endptr, 10);
 
-    if (k_endptr == k_str || *k_endptr != '\0') { exit(EXIT_FAILURE); }
+        if (k_endptr == k_str || *k_endptr != '\0') { exit(EXIT_FAILURE); }
 
-    char** arr_temp = split_string(readline());
+        char** arr_temp = split_string(readline(ifptr));
 
-    int* arr = malloc(n * sizeof(int));
+        int* arr = malloc(n * sizeof(int));
 
-    for (int i = 0; i < n; i++) {
-        char* arr_item_endptr;
-        char* arr_item_str = *(arr_temp + i);
-        int arr_item = strtol(arr_item_str, &arr_item_endptr, 10);
+        for (int i = 0; i < n; i++) {
+            char* arr_item_endptr;
+            char* arr_item_str = *(arr_temp + i);
+            int arr_item = (int)strtol(arr_item_str, &arr_item_endptr, 10);
 
-        if (arr_item_endptr == arr_item_str || *arr_item_endptr != '\0') { exit(EXIT_FAILURE); }
+            if (arr_item_endptr == arr_item_str || *arr_item_endptr != '\0') { exit(EXIT_FAILURE); }
 
-        *(arr + i) = arr_item;
+            *(arr + i) = arr_item;
+        }
+
+        int arr_count = n;
+
+        int result = unboundedKnapsack(k, arr_count, arr);
+
+        fprintf(ofptr, "%d\n", result);
     }
 
-    int arr_count = n;
-
-    int result = unboundedKnapsack(k, arr_count, arr);
-
-    fprintf(fptr, "%d\n", result);
-
-    fclose(fptr);
+    fclose(ofptr);
 
     return 0;
 }
 
-char* readline() {
+char* readline(FILE* ifptr) {
     size_t alloc_length = 1024;
     size_t data_length = 0;
     char* data = malloc(alloc_length);
 
     while (true) {
         char* cursor = data + data_length;
-        char* line = fgets(cursor, alloc_length - data_length, stdin);
+        char* line = fgets(cursor, (int)(alloc_length - data_length), ifptr);
 
         if (!line) { break; }
 
