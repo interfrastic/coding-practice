@@ -48,73 +48,38 @@ char** split_string(char*);
 // Score: 50.63  Status: Terminated due to timeout
 //
 // https://www.hackerrank.com/challenges/unbounded-knapsack/submissions/code/98252521
-
-#define MAX_VALUE 2000
-#define MIN_VALUE 1
-#define MAX_BUCKET_INDEX (MAX_VALUE - MIN_VALUE)
-#define BUCKETS_LEN (MAX_BUCKET_INDEX + 1)
-
-void permute(int coeffs [BUCKETS_LEN], int currentIndex,
-             const int buckets [BUCKETS_LEN], int targetSum, int * pMaxSum) {
-    if (*pMaxSum == targetSum) {
-        return;
-    }
-
-    coeffs[currentIndex] = 0;
-
-    while (coeffs[currentIndex] <= buckets[currentIndex]) {
-        if (currentIndex < MAX_BUCKET_INDEX) {
-            int nextIndex = currentIndex + 1;
-
-            while (nextIndex <= MAX_BUCKET_INDEX
-                   && buckets[nextIndex] == 0) {
-                nextIndex++;
-            }
-
-            permute(coeffs, nextIndex, buckets, targetSum, pMaxSum);
-        } else {
-            int sum = 0;
-
-            for (int index = 0; index <= MAX_BUCKET_INDEX; index++) {
-                sum += coeffs[index] * (index + MIN_VALUE);
-
-                if (sum > targetSum) {
-                    break;
-                }
-            }
-
-            if (sum <= targetSum && sum > *pMaxSum) {
-                *pMaxSum = sum;
-            }
-        }
-
-        coeffs[currentIndex]++;
-    }
-}
+//
+// Fifth attempt: start over with comletely new approach.
+//
+// Score: 60.00  Status: Accepted
+//
+// https://www.hackerrank.com/challenges/unbounded-knapsack/submissions/code/98254838
 
 // Complete the unboundedKnapsack function below.
 
 int unboundedKnapsack(int k, int n, int * arr) {
-    int buckets[BUCKETS_LEN] = {0};
-    bool isBounded = false;
-    bool isPossible = false;
-    int coeffs[BUCKETS_LEN] = {0};
+    int maxSum = 0;
 
     for (int i = 0; i < n; i++) {
         int value = arr[i];
-        int index = value - MIN_VALUE;
 
-        buckets[index] = isBounded ? buckets[index] + 1 : k / value;
-
-        if (buckets[index] > 0) {
-            isPossible = true;
+        if (value == k) {
+            return k;
         }
-    }
 
-    int maxSum = 0;
+        if (value > k) {
+            continue;
+        }
 
-    if (isPossible) {
-        permute(coeffs, 0, buckets, k, &maxSum);
+        int sum = value + unboundedKnapsack(k - value, n, arr);
+
+        if (sum == k) {
+            return k;
+        }
+
+        if (sum > maxSum) {
+            maxSum = sum;
+        }
     }
 
     return maxSum;
