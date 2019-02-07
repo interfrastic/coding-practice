@@ -30,6 +30,12 @@ char** split_string(char*);
 // Score: 38.13  Status: Terminated due to timeout
 //
 // https://www.hackerrank.com/challenges/unbounded-knapsack/submissions/code/98168832
+//
+// Second attempt: try some simple optimizations.
+//
+// Score: 53.75  Status: Terminated due to timeout
+//
+// https://www.hackerrank.com/challenges/unbounded-knapsack/submissions/code/98170359
 
 #define MAX_VALUE 2000
 #define MIN_VALUE 1
@@ -38,6 +44,10 @@ char** split_string(char*);
 
 void permute(int coeffs [BUCKETS_LEN], int currentIndex,
              const int buckets [BUCKETS_LEN], int targetSum, int * pMaxSum) {
+    if (*pMaxSum == targetSum) {
+        return;
+    }
+
     for (coeffs[currentIndex] = 0;
          coeffs[currentIndex] <= buckets[currentIndex];
          coeffs[currentIndex]++) {
@@ -48,6 +58,10 @@ void permute(int coeffs [BUCKETS_LEN], int currentIndex,
 
             for (int index = 0; index <= MAX_BUCKET_INDEX; index++) {
                 sum += coeffs[index] * (index + MIN_VALUE);
+
+                if (sum > targetSum) {
+                    break;
+                }
             }
 
             if (sum <= targetSum && sum > *pMaxSum) {
@@ -61,12 +75,14 @@ void permute(int coeffs [BUCKETS_LEN], int currentIndex,
 
 int unboundedKnapsack(int k, int n, int * arr) {
     int buckets[BUCKETS_LEN] = {0};
+    bool isBounded = false;
     int coeffs[BUCKETS_LEN];
 
     for (int i = 0; i < n; i++) {
         int value = arr[i];
+        int index = value - MIN_VALUE;
 
-        buckets[value - MIN_VALUE] = k / value;
+        buckets[index] = isBounded ? buckets[index] + 1 : k / value;
     }
 
     int maxSum = 0;
