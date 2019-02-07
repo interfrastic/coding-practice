@@ -36,6 +36,12 @@ char** split_string(char*);
 // Score: 53.75  Status: Terminated due to timeout
 //
 // https://www.hackerrank.com/challenges/unbounded-knapsack/submissions/code/98170359
+//
+// Third attempt: try to detect some impossible cases up front.
+//
+// Score: 53.75  Status: Terminated due to timeout
+//
+// https://www.hackerrank.com/challenges/unbounded-knapsack/submissions/code/98170834
 
 #define MAX_VALUE 2000
 #define MIN_VALUE 1
@@ -76,6 +82,7 @@ void permute(int coeffs [BUCKETS_LEN], int currentIndex,
 int unboundedKnapsack(int k, int n, int * arr) {
     int buckets[BUCKETS_LEN] = {0};
     bool isBounded = false;
+    bool isPossible = false;
     int coeffs[BUCKETS_LEN];
 
     for (int i = 0; i < n; i++) {
@@ -83,11 +90,17 @@ int unboundedKnapsack(int k, int n, int * arr) {
         int index = value - MIN_VALUE;
 
         buckets[index] = isBounded ? buckets[index] + 1 : k / value;
+
+        if (buckets[index] > 0) {
+            isPossible = true;
+        }
     }
 
     int maxSum = 0;
 
-    permute(coeffs, 0, buckets, k, &maxSum);
+    if (isPossible) {
+        permute(coeffs, 0, buckets, k, &maxSum);
+    }
 
     return maxSum;
 }
