@@ -64,8 +64,18 @@
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "INPUT_PATH"
-            value = "$PROJECT_DIR/slow-running-input"
+            value = "$PROJECT_DIR/locked-test-case-10-input"
             isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "INPUT_PATH"
+            value = "$PROJECT_DIR/sample-input"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "INPUT_PATH"
+            value = "$PROJECT_DIR/slow-running-input"
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
       <AdditionalOptions>
