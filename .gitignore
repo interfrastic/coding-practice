@@ -1,6 +1,15 @@
-# Ignore macOS metadata.
+
+# Exclude editor support files.
+
+*.sublime-project
+*.sublime-workspace
+.*.swp
+
+# Exclude files randomly dropped by macOS and Windows.
 
 .DS_Store
+._.DS_Store
+Thumbs.db
 
 # Ignore user-specific Xcode metadata.
 
