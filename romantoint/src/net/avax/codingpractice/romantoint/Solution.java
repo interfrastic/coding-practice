@@ -27,14 +27,48 @@ package net.avax.codingpractice.romantoint;
 //
 // https://leetcode.com/submissions/detail/251655084/
 
+// Third attempt: Try to keep the speed but improve clarity.
+//
+// 3999 / 3999 test cases passed.
+// Status: Accepted
+// Runtime: 3 ms, faster than 100.00% of Java online submissions for Roman to
+// Integer.
+// Memory Usage: 36 MB, less than 100.00% of Java online submissions for Roman
+// to Integer.
+//
+// https://leetcode.com/submissions/detail/251694454/
+
 @SuppressWarnings("WeakerAccess")
 public class Solution {
+
+    // I can be placed before V (5) and X (10) to make 4 and 9.
+    // X can be placed before L (50) and C (100) to make 40 and 90.
+    // C can be placed before D (500) and M (1000) to make 400 and 900.
+
+    private boolean canMerge(char c1, char c2) {
+        return (c1 == 'I' && (c2 == 'V' || c2 == 'X'))
+                || (c1 == 'X' && (c2 == 'L' || c2 == 'C'))
+                || (c1 == 'C' && (c2 == 'D' || c2 == 'M'));
+    }
+
     public int romanToInt(String s) {
         int value = 0;
+        char prevCh = '\0';
         int prevValue = 0;
 
         for (char thisCh : s.toCharArray()) {
             int thisValue;
+
+            // If the previous character can be subtracted from the current
+            // one, then convert the previous addition into a subtraction by
+            // subtracting twice the value of the previous character; for
+            // example:
+            //
+            // XL = 10 - (2 * 10) + 50 = 40
+
+            if (canMerge(prevCh, thisCh)) {
+                value -= 2 * prevValue;
+            }
 
             // Roman numerals are represented by seven different symbols:
             // I, V, X, L, C, D and M.
@@ -42,80 +76,33 @@ public class Solution {
             switch (thisCh) {
                 case 'I':
                     thisValue = 1;
-
                     break;
                 case 'V':
                     thisValue = 5;
-
-                    // I can be placed before V (5) and X (10) to make 4 and 9.
-
-                    if (prevValue == 1) {
-                        thisValue -= 2 * prevValue;
-                    }
-
                     break;
                 case 'X':
                     thisValue = 10;
-
-                    // I can be placed before V (5) and X (10) to make 4 and 9.
-
-                    if (prevValue == 1) {
-                        thisValue -= 2 * prevValue;
-                    }
-
                     break;
                 case 'L':
                     thisValue = 50;
-
-                    // X can be placed before L (50) and C (100) to make 40 and
-                    // 90.
-
-                    if (prevValue == 10) {
-                        thisValue -= 2 * prevValue;
-                    }
-
                     break;
                 case 'C':
                     thisValue = 100;
-
-                    // X can be placed before L (50) and C (100) to make 40 and
-                    // 90.
-
-                    if (prevValue == 10) {
-                        thisValue -= 2 * prevValue;
-                    }
-
                     break;
                 case 'D':
                     thisValue = 500;
-
-                    // C can be placed before D (500) and M (1000) to make 400
-                    // and 900.
-
-                    if (prevValue == 100) {
-                        thisValue -= 2 * prevValue;
-                    }
-
                     break;
                 case 'M':
                     thisValue = 1000;
-
-                    // C can be placed before D (500) and M (1000) to make 400
-                    // and 900.
-
-                    if (prevValue == 100) {
-                        thisValue -= 2 * prevValue;
-                    }
-
                     break;
                 default:
                     thisValue = 0;
-
                     break;
             }
 
             value += thisValue;
 
+            prevCh = thisCh;
             prevValue = thisValue;
         }
 
