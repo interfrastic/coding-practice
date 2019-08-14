@@ -16,55 +16,107 @@ package net.avax.codingpractice.romantoint;
 //
 // https://leetcode.com/submissions/detail/249809371/
 
+// Second attempt: Try to optimize for speed and memory usage.
+//
+// 3999 / 3999 test cases passed.
+// Status: Accepted
+// Runtime: 3 ms, faster than 100.00% of Java online submissions for Roman to
+// Integer.
+// Memory Usage: 35.9 MB, less than 100.00% of Java online submissions for Roman
+// to Integer.
+//
+// https://leetcode.com/submissions/detail/251655084/
+
 @SuppressWarnings("WeakerAccess")
 public class Solution {
-    final int[] valueForSymbol;
-    final boolean[][] canSubtract;
-
-    Solution() {
-        valueForSymbol = new int[128];
-        canSubtract = new boolean[128][128];
-
-        // Roman numerals are represented by seven different symbols:
-        // I, V, X, L, C, D and M.
-
-        valueForSymbol['I'] = 1;
-        valueForSymbol['V'] = 5;
-        valueForSymbol['X'] = 10;
-        valueForSymbol['L'] = 50;
-        valueForSymbol['C'] = 100;
-        valueForSymbol['D'] = 500;
-        valueForSymbol['M'] = 1000;
-
-        // I can be placed before V (5) and X (10) to make 4 and 9.
-
-        canSubtract['I']['V'] = true;
-        canSubtract['I']['X'] = true;
-
-        // X can be placed before L (50) and C (100) to make 40 and 90.
-
-        canSubtract['X']['L'] = true;
-        canSubtract['X']['C'] = true;
-
-        // C can be placed before D (500) and M (1000) to make 400 and 900.
-
-        canSubtract['C']['D'] = true;
-        canSubtract['C']['M'] = true;
-    }
-
     public int romanToInt(String s) {
-        int iMax = s.length() - 1;
         int value = 0;
+        int prevValue = 0;
 
-        for (int i = 0; i <= iMax; i++) {
-            char c = s.charAt(i);
-            int symbolValue = valueForSymbol[c];
+        for (char thisCh : s.toCharArray()) {
+            int thisValue;
 
-            if (i < iMax && canSubtract[c][s.charAt(i + 1)]) {
-                value -= symbolValue;
-            } else {
-                value += symbolValue;
+            // Roman numerals are represented by seven different symbols:
+            // I, V, X, L, C, D and M.
+
+            switch (thisCh) {
+                case 'I':
+                    thisValue = 1;
+
+                    break;
+                case 'V':
+                    thisValue = 5;
+
+                    // I can be placed before V (5) and X (10) to make 4 and 9.
+
+                    if (prevValue == 1) {
+                        thisValue -= 2 * prevValue;
+                    }
+
+                    break;
+                case 'X':
+                    thisValue = 10;
+
+                    // I can be placed before V (5) and X (10) to make 4 and 9.
+
+                    if (prevValue == 1) {
+                        thisValue -= 2 * prevValue;
+                    }
+
+                    break;
+                case 'L':
+                    thisValue = 50;
+
+                    // X can be placed before L (50) and C (100) to make 40 and
+                    // 90.
+
+                    if (prevValue == 10) {
+                        thisValue -= 2 * prevValue;
+                    }
+
+                    break;
+                case 'C':
+                    thisValue = 100;
+
+                    // X can be placed before L (50) and C (100) to make 40 and
+                    // 90.
+
+                    if (prevValue == 10) {
+                        thisValue -= 2 * prevValue;
+                    }
+
+                    break;
+                case 'D':
+                    thisValue = 500;
+
+                    // C can be placed before D (500) and M (1000) to make 400
+                    // and 900.
+
+                    if (prevValue == 100) {
+                        thisValue -= 2 * prevValue;
+                    }
+
+                    break;
+                case 'M':
+                    thisValue = 1000;
+
+                    // C can be placed before D (500) and M (1000) to make 400
+                    // and 900.
+
+                    if (prevValue == 100) {
+                        thisValue -= 2 * prevValue;
+                    }
+
+                    break;
+                default:
+                    thisValue = 0;
+
+                    break;
             }
+
+            value += thisValue;
+
+            prevValue = thisValue;
         }
 
         return value;
