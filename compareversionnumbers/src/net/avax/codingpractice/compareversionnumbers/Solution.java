@@ -16,31 +16,69 @@ package net.avax.codingpractice.compareversionnumbers;
 //
 // https://leetcode.com/submissions/detail/253699732/
 
-import java.util.Arrays;
-import java.util.List;
+// Second attempt: Optimize for speed.
+//
+// 60 / 72 test cases passed.
+// Status: Wrong Answer
+//
+// https://leetcode.com/submissions/detail/253992721/
 
-import static java.util.stream.Collectors.toList;
+import static java.lang.Character.isDigit;
 
 @SuppressWarnings("WeakerAccess")
 public class Solution {
     public int compareVersion(String version1, String version2) {
-        List<Integer> fields1 = Arrays.stream(version1.split("[.]"))
-                .map(Integer::parseInt).collect(toList());
-        List<Integer> fields2 = Arrays.stream(version2.split("[.]"))
-                .map(Integer::parseInt).collect(toList());
-        int size1 = fields1.size();
-        int size2 = fields2.size();
-        int indexLimit = Math.max(size1, size2);
+        int indexLimit1 = version1.length();
+        int indexLimit2 = version2.length();
+        int index1 = 0;
+        int index2 = 0;
 
-        for (int index = 0; index < indexLimit; index++) {
-            int field1 = (index < size1) ? fields1.get(index) : 0;
-            int field2 = (index < size2) ? fields2.get(index) : 0;
+        while (index1 < indexLimit1 || index2 < indexLimit2) {
+            index1 = skipLeadingZeroes(version1, index1);
+            index2 = skipLeadingZeroes(version2, index2);
 
-            if (field1 != field2) {
-                return (field1 > field2) ? 1 : -1;
-            }
+            char c1 = '\0';
+            char c2 = '\0';
+            char cc1;
+            char cc2;
+
+            do {
+                if (index1 < indexLimit1) {
+                    c1 = version1.charAt(index1);
+                    cc1 = (c1 == '.') ? '0' : c1;
+                    index1++;
+                } else {
+                    cc1 = '0';
+                }
+
+                if (index2 < indexLimit2) {
+                    c2 = version2.charAt(index2);
+                    cc2 = (c2 == '.') ? '0' : c2;
+                    index2++;
+                } else {
+                    cc2 = '0';
+                }
+
+                if (cc1 != cc2) {
+                    return (cc1 > cc2) ? 1 : -1;
+                }
+
+            } while (!((index1 == indexLimit1 || c1 == '.')
+                    && (index2 == indexLimit2 || c2 == '.')));
         }
 
         return 0;
+    }
+
+    private int skipLeadingZeroes(String number, int index) {
+        int indexLimit = number.length();
+        int newIndex = index;
+
+        while (index < indexLimit && number.charAt(index) == '0'
+                && ++index < indexLimit && isDigit(number.charAt(index))) {
+            newIndex = index;
+        }
+
+        return newIndex;
     }
 }
