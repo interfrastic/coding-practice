@@ -29,10 +29,21 @@ package net.avax.codingpractice.compareversionnumbers;
 // Status: Accepted
 // Runtime: 0 ms, faster than 100.00% of Java online submissions for Compare
 // Version Numbers.
-// Memory Usage: 34 MB, less than 100.00% of Java online submissions for
+// Memory Usage: 34.2 MB, less than 100.00% of Java online submissions for
 // Compare Version Numbers.
 //
 // https://leetcode.com/submissions/detail/258372095/
+
+// Fourth attempt: See if use of Integer.parseInt() reduces speed.
+//
+// 72 / 72 test cases passed.
+// Status: Accepted
+// Runtime: 1 ms, faster than 90.94% of Java online submissions for Compare
+// Version Numbers.
+// Memory Usage: 34 MB, less than 100.00% of Java online submissions for
+// Compare Version Numbers.
+//
+// https://leetcode.com/submissions/detail/258376233/
 
 import static java.lang.Character.isDigit;
 
@@ -41,22 +52,19 @@ public class Solution {
     private int compareNumbers(String str1, int beginIndex1, int endIndex1,
                                String str2, int beginIndex2, int endIndex2) {
         int result = 0;
-        int numLength1 = endIndex1 - beginIndex1;
-        int numLength2 = endIndex2 - beginIndex2;
-        int maxLength = Math.max(numLength1, numLength2);
-        int index = 0;
+        int num1 = 0;
+        int num2 = 0;
 
-        while (index < maxLength && result == 0) {
-            int index1 = endIndex1 - maxLength + index;
-            int index2 = endIndex2 - maxLength + index;
-            int ch1 = (index1 >= beginIndex1) ? str1.charAt(index1) : '0';
-            int ch2 = (index2 >= beginIndex2) ? str2.charAt(index2) : '0';
+        if (endIndex1 > beginIndex1) {
+            num1 = Integer.parseInt(str1.substring(beginIndex1, endIndex1));
+        }
 
-            if (ch1 != ch2) {
-                result = (ch1 > ch2) ? 1 : -1;
-            }
+        if (endIndex2 > beginIndex2) {
+            num2 = Integer.parseInt(str2.substring(beginIndex2, endIndex2));
+        }
 
-            index++;
+        if (num1 != num2) {
+            result = (num1 > num2) ? 1 : -1;
         }
 
         return result;
